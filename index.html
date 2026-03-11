@@ -361,6 +361,10 @@
             background: linear-gradient(135deg, #f39c12 0%, #d35400 100%);
         }
 
+        .btn-success {
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+        }
+
         .btn-sm {
             padding: 8px 15px;
             font-size: 14px;
@@ -425,6 +429,108 @@
             font-size: 12px;
             color: #4a9eff;
             opacity: 0.7;
+        }
+
+        /* CARDS DE PRESTAÇÃO DE CONTAS */
+        .dashboard-contas {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .card-conta {
+            background: #1a1a2e;
+            border-radius: 15px;
+            padding: 22px;
+            border-left: 5px solid #ffd966;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .card-conta:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(255, 217, 102, 0.2);
+        }
+
+        .card-conta h3 {
+            color: #ffd966;
+            margin-bottom: 12px;
+            font-size: 18px;
+            border-bottom: 1px dashed #4a6fa5;
+            padding-bottom: 10px;
+        }
+
+        .card-conta .valor {
+            font-size: 32px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .card-conta .valor.positivo {
+            color: #9bdeac;
+        }
+
+        .card-conta .valor.negativo {
+            color: #f8a5a5;
+        }
+
+        .card-conta small {
+            display: block;
+            color: #a0aec0;
+            font-size: 13px;
+            margin-top: 8px;
+        }
+
+        .tabs-contas {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .tab-conta {
+            padding: 12px 24px;
+            background: #1a1a2e;
+            border: 1px solid #4a6fa5;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            color: #b8d0ff;
+            transition: all 0.3s;
+        }
+
+        .tab-conta:hover {
+            background: #0f3460;
+            color: #ffd966;
+            border-color: #ffd966;
+        }
+
+        .tab-conta.active {
+            background: #0f3460;
+            color: #ffd966;
+            border-color: #ffd966;
+        }
+
+        .badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .badge-entrada {
+            background: #1e3a2f;
+            color: #9bdeac;
+            border: 1px solid #2d6a4f;
+        }
+
+        .badge-saida {
+            background: #3b1e1e;
+            color: #f8a5a5;
+            border: 1px solid #991b1b;
         }
 
         /* CARDS DE TURMAS (REUNIÕES) */
@@ -540,6 +646,10 @@
             justify-content: center;
             align-items: center;
             z-index: 1000;
+        }
+
+        .modal.active {
+            display: flex;
         }
 
         .modal-content {
@@ -897,6 +1007,23 @@
             background: linear-gradient(90deg, transparent, #4a9eff, #03dac6, #4a9eff, transparent);
             margin: 20px 0;
         }
+
+        .detalhe-item {
+            background: #1a1a2e;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 3px solid #ffd966;
+        }
+
+        #relatorioPreview {
+            background: #1a1a2e;
+            padding: 25px;
+            border-radius: 12px;
+            min-height: 300px;
+            border: 2px solid #4a6fa5;
+            color: #e0e0e0;
+        }
     </style>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
@@ -949,6 +1076,11 @@
                     <div class="icone">📊</div>
                     <h3>Reunião de Pais</h3>
                     <p>Registro e acompanhamento de reuniões escolares</p>
+                </div>
+                <div class="menu-card" onclick="abrirModulo('prestacaoContas')">
+                    <div class="icone">💰</div>
+                    <h3>Prestação de Contas</h3>
+                    <p>Projeto Óleo e APM</p>
                 </div>
             </div>
         </div>
@@ -1183,6 +1315,191 @@
             <div id="turmasContainer" class="turmas-grid"></div>
         </div>
 
+        <!-- MÓDULO PRESTAÇÃO DE CONTAS -->
+        <div id="moduloPrestacaoContas" class="painel">
+            <div class="painel-header">
+                <h2>💰 Prestação de Contas</h2>
+                <button class="btn-voltar-menu" onclick="voltarMenu()">← Voltar ao Menu</button>
+            </div>
+
+            <div id="mensagemContas" class="mensagem"></div>
+
+            <!-- Abas -->
+            <div class="tabs-contas">
+                <button class="tab-conta active" onclick="mostrarAbaContas('oleo')">🛢️ Projeto Óleo</button>
+                <button class="tab-conta" onclick="mostrarAbaContas('apm')">👥 APM</button>
+                <button class="tab-conta" onclick="mostrarAbaContas('relatorios')">📊 Relatórios</button>
+            </div>
+
+            <!-- Aba Projeto Óleo -->
+            <div id="abaOleo" class="aba-conta">
+                <div class="dashboard-contas">
+                    <div class="card-conta" onclick="mostrarDetalhesConta('oleo', 'saldo')">
+                        <h3>💰 Saldo Disponível</h3>
+                        <div class="valor" id="oleoSaldo">R$ 0,00</div>
+                        <small>📌 Clique para ver detalhes</small>
+                    </div>
+                    <div class="card-conta" onclick="mostrarDetalhesConta('oleo', 'entradas')">
+                        <h3>📈 Total de Entradas</h3>
+                        <div class="valor positivo" id="oleoEntradas">R$ 0,00</div>
+                        <small>📌 Clique para ver detalhes</small>
+                    </div>
+                    <div class="card-conta" onclick="mostrarDetalhesConta('oleo', 'saidas')">
+                        <h3>📉 Total de Saídas</h3>
+                        <div class="valor negativo" id="oleoSaidas">R$ 0,00</div>
+                        <small>📌 Clique para ver detalhes</small>
+                    </div>
+                </div>
+
+                <div class="form-container">
+                    <h3>📝 Registrar Nova Movimentação - Óleo</h3>
+                    <form id="oleoForm">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Tipo</label>
+                                <select id="oleoTipo" required>
+                                    <option value="entrada">➕ Entrada</option>
+                                    <option value="saida">➖ Saída</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Data</label>
+                                <input type="date" id="oleoData" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Valor (R$)</label>
+                                <input type="number" id="oleoValor" step="0.01" min="0" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Descrição</label>
+                            <input type="text" id="oleoDescricao" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Observações</label>
+                            <textarea id="oleoObservacoes"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Registrar</button>
+                    </form>
+                </div>
+
+                <div class="form-container">
+                    <h3>📋 Histórico - Óleo</h3>
+                    <div class="tabela-container">
+                        <table id="oleoTabela">
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Tipo</th>
+                                    <th>Descrição</th>
+                                    <th>Valor</th>
+                                    <th>Obs</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="oleoBody">
+                                <tr><td colspan="6" style="text-align: center;">Nenhum registro</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Aba APM -->
+            <div id="abaApm" class="aba-conta" style="display: none;">
+                <div class="dashboard-contas">
+                    <div class="card-conta" onclick="mostrarDetalhesConta('apm', 'saldo')">
+                        <h3>💰 Saldo APM</h3>
+                        <div class="valor" id="apmSaldo">R$ 0,00</div>
+                        <small>📌 Clique para ver detalhes</small>
+                    </div>
+                    <div class="card-conta" onclick="mostrarDetalhesConta('apm', 'entradas')">
+                        <h3>📈 Total de Entradas</h3>
+                        <div class="valor positivo" id="apmEntradas">R$ 0,00</div>
+                        <small>📌 Clique para ver detalhes</small>
+                    </div>
+                    <div class="card-conta" onclick="mostrarDetalhesConta('apm', 'saidas')">
+                        <h3>📉 Total de Saídas</h3>
+                        <div class="valor negativo" id="apmSaidas">R$ 0,00</div>
+                        <small>📌 Clique para ver detalhes</small>
+                    </div>
+                </div>
+
+                <div class="form-container">
+                    <h3>📝 Registrar Nova Movimentação - APM</h3>
+                    <form id="apmForm">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Tipo</label>
+                                <select id="apmTipo" required>
+                                    <option value="entrada">➕ Entrada</option>
+                                    <option value="saida">➖ Saída</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Data</label>
+                                <input type="date" id="apmData" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Valor (R$)</label>
+                                <input type="number" id="apmValor" step="0.01" min="0" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Descrição</label>
+                            <input type="text" id="apmDescricao" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Observações</label>
+                            <textarea id="apmObservacoes"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Registrar</button>
+                    </form>
+                </div>
+
+                <div class="form-container">
+                    <h3>📋 Histórico - APM</h3>
+                    <div class="tabela-container">
+                        <table id="apmTabela">
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Tipo</th>
+                                    <th>Descrição</th>
+                                    <th>Valor</th>
+                                    <th>Obs</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="apmBody">
+                                <tr><td colspan="6" style="text-align: center;">Nenhum registro</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Aba Relatórios -->
+            <div id="abaRelatorios" class="aba-conta" style="display: none;">
+                <div class="form-container">
+                    <h3>📊 Relatórios</h3>
+                    
+                    <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 25px;">
+                        <button class="btn-sm btn-success" onclick="gerarRelatorio('oleo')">📄 Relatório Óleo</button>
+                        <button class="btn-sm btn-success" onclick="gerarRelatorio('apm')">📄 Relatório APM</button>
+                        <button class="btn-sm btn-success" onclick="gerarRelatorioCompleto()">📚 Relatório Consolidado</button>
+                        <button class="btn-sm btn-warning" onclick="imprimirRelatorio()">🖨️ Imprimir</button>
+                    </div>
+
+                    <div id="relatorioPreview">
+                        <div style="text-align: center; padding: 50px; color: #6b7280;">
+                            Selecione um relatório para visualizar
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- FOOTER -->
         <div class="footer">
             <span>© 2026 Desenvolvido por João_Lino • Todos os direitos reservados</span>
@@ -1284,14 +1601,61 @@
         </div>
     </div>
 
+    <!-- MODAL DETALHES PRESTAÇÃO DE CONTAS -->
+    <div id="modalDetalhesConta" class="modal">
+        <div class="modal-content large">
+            <span class="close" onclick="fecharModal('detalhesConta')">&times;</span>
+            <h2 id="detalhesTitulo">Detalhes</h2>
+            <div id="detalhesConteudo" class="detalhes-lista"></div>
+        </div>
+    </div>
+
+    <!-- MODAL EDIÇÃO PRESTAÇÃO DE CONTAS -->
+    <div id="modalEdicaoConta" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="fecharModal('edicaoConta')">&times;</span>
+            <h2>✏️ Editar Movimentação</h2>
+            <form id="formEdicaoConta">
+                <input type="hidden" id="editContaId">
+                <input type="hidden" id="editContaOrigem">
+                <div class="form-group">
+                    <label>Tipo</label>
+                    <select id="editContaTipo" required>
+                        <option value="entrada">➕ Entrada</option>
+                        <option value="saida">➖ Saída</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Data</label>
+                    <input type="date" id="editContaData" required>
+                </div>
+                <div class="form-group">
+                    <label>Descrição</label>
+                    <input type="text" id="editContaDescricao" required>
+                </div>
+                <div class="form-group">
+                    <label>Valor (R$)</label>
+                    <input type="number" id="editContaValor" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label>Observações</label>
+                    <textarea id="editContaObservacoes"></textarea>
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" class="btn btn-danger" onclick="fecharModal('edicaoConta')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         // ============================================
-        // CONFIGURAÇÃO SUPABASE CORRIGIDA
+        // CONFIGURAÇÃO SUPABASE
         // ============================================
         const SUPABASE_URL = 'https://ojvhnomviovwnkjhfbvb.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_gtGOHqoI05nWI8SToBjR9g_8c17nXnq';
         
-        // CRIAR CLIENTE SUPABASE
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         console.log('✅ Conectado ao Supabase');
 
@@ -1304,9 +1668,12 @@
         let lancamentos = [];
         let turmas = [];
         let reunioes = [];
+        let movimentacoesOleo = [];
+        let movimentacoesApm = [];
         let filtro = { pessoa: 'todas', data: '' };
         let moduloAtual = '';
         let turmaAtualModal = '';
+        let abaContasAtual = 'oleo';
 
         // ============================================
         // SISTEMA DE NOTIFICAÇÕES
@@ -1344,6 +1711,13 @@
         function fecharNotificacao(id) {
             const notificacao = document.getElementById(`notif-${id}`);
             if (notificacao) notificacao.remove();
+        }
+
+        function mostrarMensagem(texto, tipo) {
+            const msg = document.getElementById('mensagemContas');
+            msg.textContent = texto;
+            msg.className = `mensagem ${tipo}`;
+            setTimeout(() => msg.className = 'mensagem', 3000);
         }
 
         // ============================================
@@ -1395,6 +1769,7 @@
             document.getElementById('menuPrincipal').style.display = 'block';
             document.getElementById('moduloBancoHoras').classList.remove('ativo');
             document.getElementById('moduloReuniaoPais').classList.remove('ativo');
+            document.getElementById('moduloPrestacaoContas').classList.remove('ativo');
             moduloAtual = '';
         }
 
@@ -1404,13 +1779,21 @@
             if (modulo === 'bancoHoras') {
                 document.getElementById('moduloBancoHoras').classList.add('ativo');
                 document.getElementById('moduloReuniaoPais').classList.remove('ativo');
+                document.getElementById('moduloPrestacaoContas').classList.remove('ativo');
                 moduloAtual = 'bancoHoras';
                 mostrarSubPainel('dashboard');
-            } else {
+            } else if (modulo === 'reuniaoPais') {
                 document.getElementById('moduloReuniaoPais').classList.add('ativo');
                 document.getElementById('moduloBancoHoras').classList.remove('ativo');
+                document.getElementById('moduloPrestacaoContas').classList.remove('ativo');
                 moduloAtual = 'reuniaoPais';
                 carregarDadosReunioes();
+            } else {
+                document.getElementById('moduloPrestacaoContas').classList.add('ativo');
+                document.getElementById('moduloBancoHoras').classList.remove('ativo');
+                document.getElementById('moduloReuniaoPais').classList.remove('ativo');
+                moduloAtual = 'prestacaoContas';
+                carregarDadosPrestacaoContas();
             }
         }
 
@@ -1420,6 +1803,15 @@
             document.getElementById('subPainelPessoas').style.display = 'none';
             
             document.getElementById(`subPainel${subPainel.charAt(0).toUpperCase() + subPainel.slice(1)}`).style.display = 'block';
+        }
+
+        function mostrarAbaContas(aba) {
+            document.querySelectorAll('.tab-conta').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.aba-conta').forEach(a => a.style.display = 'none');
+            
+            event.target.classList.add('active');
+            document.getElementById(`aba${aba.charAt(0).toUpperCase() + aba.slice(1)}`).style.display = 'block';
+            abaContasAtual = aba;
         }
 
         // ============================================
@@ -1845,6 +2237,7 @@
             }
 
             const nova = {
+                id: Date.now(),
                 turma_id: turmaId,
                 data: data,
                 alunos_ativos: alunos,
@@ -1854,12 +2247,14 @@
             const { error } = await supabaseClient.from('reunioes').insert([nova]);
             
             if (!error) {
-                await carregarDadosReunioes();
+                reunioes.unshift(nova);
                 
                 document.getElementById('dataReuniao').value = '';
                 document.getElementById('alunosAtivos').value = '';
                 document.getElementById('paisPresentes').value = '';
                 
+                renderizarTurmas();
+                atualizarEstatisticasReunioes();
                 mostrarNotificacao('sucesso', 'Sucesso!', 'Reunião cadastrada.');
             } else {
                 mostrarNotificacao('erro', 'Erro', error.message);
@@ -1986,7 +2381,10 @@
             const { error } = await supabaseClient.from('reunioes').delete().eq('id', id);
             
             if (!error) {
-                await carregarDadosReunioes();
+                reunioes = reunioes.filter(r => r.id !== id);
+                renderizarTurmas();
+                atualizarEstatisticasReunioes();
+                
                 if (turmaAtualModal) {
                     const turma = turmas.find(t => t.id === turmaAtualModal);
                     if (turma) verHistoricoReunioes(turma.id, turma.nome);
@@ -2099,22 +2497,348 @@
         }
 
         // ============================================
+        // FUNÇÕES PRESTAÇÃO DE CONTAS
+        // ============================================
+        async function carregarDadosPrestacaoContas() {
+            try {
+                // Carregar movimentações do óleo
+                const { data: oleoData, error: oleoError } = await supabaseClient
+                    .from('movimentacoes_oleo')
+                    .select('*')
+                    .order('data', { ascending: false });
+                
+                if (oleoError) throw oleoError;
+                
+                // Carregar movimentações da APM
+                const { data: apmData, error: apmError } = await supabaseClient
+                    .from('movimentacoes_apm')
+                    .select('*')
+                    .order('data', { ascending: false });
+                
+                if (apmError) throw apmError;
+                
+                movimentacoesOleo = oleoData || [];
+                movimentacoesApm = apmData || [];
+                
+                // Atualizar interface
+                atualizarTabelasContas();
+                atualizarCardsContas();
+                
+            } catch (erro) {
+                console.error(erro);
+                mostrarNotificacao('erro', 'Erro', erro.message);
+            }
+        }
+
+        function atualizarTabelasContas() {
+            // Tabela Óleo
+            const oleoBody = document.getElementById('oleoBody');
+            if (oleoBody) {
+                if (movimentacoesOleo.length === 0) {
+                    oleoBody.innerHTML = '<tr><td colspan="6" style="text-align:center">Nenhum registro</td></tr>';
+                } else {
+                    oleoBody.innerHTML = movimentacoesOleo
+                        .sort((a, b) => new Date(b.data) - new Date(a.data))
+                        .map(m => `<tr>
+                            <td>${formatarDataReuniao(m.data)}</td>
+                            <td><span class="badge ${m.tipo === 'entrada' ? 'badge-entrada' : 'badge-saida'}">${m.tipo === 'entrada' ? '➕' : '➖'}</span></td>
+                            <td>${m.descricao}</td>
+                            <td>R$ ${m.valor.toFixed(2)}</td>
+                            <td>${m.observacoes || '-'}</td>
+                            <td>
+                                <button class="btn-sm btn-warning" onclick="editarMovimentacao('oleo', ${m.id})">✏️</button>
+                                <button class="btn-sm btn-danger" onclick="excluirMovimentacao('oleo', ${m.id})">🗑️</button>
+                            </td>
+                        </tr>`).join('');
+                }
+            }
+
+            // Tabela APM
+            const apmBody = document.getElementById('apmBody');
+            if (apmBody) {
+                if (movimentacoesApm.length === 0) {
+                    apmBody.innerHTML = '<tr><td colspan="6" style="text-align:center">Nenhum registro</td></tr>';
+                } else {
+                    apmBody.innerHTML = movimentacoesApm
+                        .sort((a, b) => new Date(b.data) - new Date(a.data))
+                        .map(m => `<tr>
+                            <td>${formatarDataReuniao(m.data)}</td>
+                            <td><span class="badge ${m.tipo === 'entrada' ? 'badge-entrada' : 'badge-saida'}">${m.tipo === 'entrada' ? '➕' : '➖'}</span></td>
+                            <td>${m.descricao}</td>
+                            <td>R$ ${m.valor.toFixed(2)}</td>
+                            <td>${m.observacoes || '-'}</td>
+                            <td>
+                                <button class="btn-sm btn-warning" onclick="editarMovimentacao('apm', ${m.id})">✏️</button>
+                                <button class="btn-sm btn-danger" onclick="excluirMovimentacao('apm', ${m.id})">🗑️</button>
+                            </td>
+                        </tr>`).join('');
+                }
+            }
+        }
+
+        function atualizarCardsContas() {
+            // Calcular totais do Óleo
+            const oleoEntradas = movimentacoesOleo
+                .filter(m => m.tipo === 'entrada')
+                .reduce((acc, m) => acc + m.valor, 0);
+            
+            const oleoSaidas = movimentacoesOleo
+                .filter(m => m.tipo === 'saida')
+                .reduce((acc, m) => acc + m.valor, 0);
+            
+            document.getElementById('oleoEntradas').textContent = `R$ ${oleoEntradas.toFixed(2)}`;
+            document.getElementById('oleoSaidas').textContent = `R$ ${oleoSaidas.toFixed(2)}`;
+            document.getElementById('oleoSaldo').textContent = `R$ ${(oleoEntradas - oleoSaidas).toFixed(2)}`;
+
+            // Calcular totais da APM
+            const apmEntradas = movimentacoesApm
+                .filter(m => m.tipo === 'entrada')
+                .reduce((acc, m) => acc + m.valor, 0);
+            
+            const apmSaidas = movimentacoesApm
+                .filter(m => m.tipo === 'saida')
+                .reduce((acc, m) => acc + m.valor, 0);
+            
+            document.getElementById('apmEntradas').textContent = `R$ ${apmEntradas.toFixed(2)}`;
+            document.getElementById('apmSaidas').textContent = `R$ ${apmSaidas.toFixed(2)}`;
+            document.getElementById('apmSaldo').textContent = `R$ ${(apmEntradas - apmSaidas).toFixed(2)}`;
+        }
+
+        function mostrarDetalhesConta(origem, tipo) {
+            const movs = origem === 'oleo' ? movimentacoesOleo : movimentacoesApm;
+            const nome = origem === 'oleo' ? 'Óleo' : 'APM';
+            
+            let titulo = '', lista = [];
+            if (tipo === 'saldo') {
+                titulo = `💰 Saldo - ${nome}`;
+                lista = movs.sort((a,b) => new Date(b.data) - new Date(a.data));
+            } else if (tipo === 'entradas') {
+                titulo = `📈 Entradas - ${nome}`;
+                lista = movs.filter(m => m.tipo === 'entrada').sort((a,b) => new Date(b.data) - new Date(a.data));
+            } else {
+                titulo = `📉 Saídas - ${nome}`;
+                lista = movs.filter(m => m.tipo === 'saida').sort((a,b) => new Date(b.data) - new Date(a.data));
+            }
+
+            let html = '';
+            lista.forEach(m => {
+                html += `<div class="detalhe-item">
+                    <p><strong>Data:</strong> ${formatarDataReuniao(m.data)}</p>
+                    <p><strong>Descrição:</strong> ${m.descricao}</p>
+                    <p><strong>Valor:</strong> R$ ${m.valor.toFixed(2)}</p>
+                    <p><strong>Obs:</strong> ${m.observacoes || '-'}</p>
+                </div>`;
+            });
+
+            document.getElementById('detalhesTitulo').textContent = titulo;
+            document.getElementById('detalhesConteudo').innerHTML = html || '<p style="text-align:center">Nenhum registro</p>';
+            document.getElementById('modalDetalhesConta').classList.add('active');
+        }
+
+        function editarMovimentacao(origem, id) {
+            const movs = origem === 'oleo' ? movimentacoesOleo : movimentacoesApm;
+            const mov = movs.find(m => m.id === id);
+            
+            if (mov) {
+                document.getElementById('editContaId').value = mov.id;
+                document.getElementById('editContaOrigem').value = origem;
+                document.getElementById('editContaTipo').value = mov.tipo;
+                document.getElementById('editContaData').value = mov.data;
+                document.getElementById('editContaDescricao').value = mov.descricao;
+                document.getElementById('editContaValor').value = mov.valor;
+                document.getElementById('editContaObservacoes').value = mov.observacoes || '';
+                document.getElementById('modalEdicaoConta').classList.add('active');
+            }
+        }
+
+        async function excluirMovimentacao(origem, id) {
+            if (!confirm('Excluir esta movimentação?')) return;
+            
+            const tabela = origem === 'oleo' ? 'movimentacoes_oleo' : 'movimentacoes_apm';
+            
+            const { error } = await supabaseClient.from(tabela).delete().eq('id', id);
+            
+            if (!error) {
+                if (origem === 'oleo') {
+                    movimentacoesOleo = movimentacoesOleo.filter(m => m.id !== id);
+                } else {
+                    movimentacoesApm = movimentacoesApm.filter(m => m.id !== id);
+                }
+                
+                atualizarTabelasContas();
+                atualizarCardsContas();
+                mostrarNotificacao('sucesso', 'Excluído!', 'Movimentação removida.');
+            }
+        }
+
+        function gerarRelatorio(tipo) {
+            const movs = tipo === 'oleo' ? movimentacoesOleo : movimentacoesApm;
+            const titulo = tipo === 'oleo' ? 'PROJETO ÓLEO' : 'APM';
+            const ent = movs.filter(m => m.tipo === 'entrada').reduce((a,m) => a + m.valor, 0);
+            const sai = movs.filter(m => m.tipo === 'saida').reduce((a,m) => a + m.valor, 0);
+
+            let html = `
+                <div style="font-family:Arial; max-width:800px; margin:0 auto; background:white; color:black; padding:20px;">
+                    <h1 style="text-align:center; color:black;">RELATÓRIO DE PRESTAÇÃO DE CONTAS</h1>
+                    <h2 style="text-align:center; color:black;">${titulo}</h2>
+                    <p style="text-align:center; color:black;">${new Date().toLocaleDateString('pt-BR')}</p>
+                    <hr style="border:1px solid black;">
+                    <h3 style="color:black;">RESUMO</h3>
+                    <table style="width:100%; border-collapse:collapse; color:black;">
+                        <tr><td style="border:1px solid black; padding:8px; color:black;">Entradas:</td><td style="border:1px solid black; padding:8px; text-align:right; color:black;">R$ ${ent.toFixed(2)}</td></tr>
+                        <tr><td style="border:1px solid black; padding:8px; color:black;">Saídas:</td><td style="border:1px solid black; padding:8px; text-align:right; color:black;">R$ ${sai.toFixed(2)}</td></tr>
+                        <tr><td style="border:1px solid black; padding:8px; font-weight:bold; color:black;">Saldo:</td><td style="border:1px solid black; padding:8px; text-align:right; font-weight:bold; color:black;">R$ ${(ent - sai).toFixed(2)}</td></tr>
+                    </table>
+                    <hr style="border:1px solid black;">
+                    <h3 style="color:black;">DETALHAMENTO</h3>
+                    <table style="width:100%; border-collapse:collapse; color:black;">
+                        <thead><tr><th style="border:1px solid black; padding:8px; color:black;">Data</th><th style="border:1px solid black; padding:8px; color:black;">Tipo</th><th style="border:1px solid black; padding:8px; color:black;">Descrição</th><th style="border:1px solid black; padding:8px; color:black;">Valor</th></tr></thead>
+                        <tbody>
+            `;
+
+            movs.sort((a,b) => new Date(b.data) - new Date(a.data)).forEach(m => {
+                html += `<tr>
+                    <td style="border:1px solid black; padding:8px; color:black;">${formatarDataReuniao(m.data)}</td>
+                    <td style="border:1px solid black; padding:8px; color:black;">${m.tipo === 'entrada' ? 'ENTRADA' : 'SAÍDA'}</td>
+                    <td style="border:1px solid black; padding:8px; color:black;">${m.descricao}</td>
+                    <td style="border:1px solid black; padding:8px; text-align:right; color:black;">R$ ${m.valor.toFixed(2)}</td>
+                </tr>`;
+            });
+
+            html += `</tbody></table><hr style="border:1px solid black;"><div style="display:flex; justify-content:space-between; margin-top:50px">
+                <div style="text-align:center; color:black;">_________________<br>Assinatura</div>
+                <div style="text-align:center; color:black;">_________________<br>Assinatura</div>
+            </div></div>`;
+
+            document.getElementById('relatorioPreview').innerHTML = html;
+        }
+
+        function gerarRelatorioCompleto() {
+            const oe = movimentacoesOleo.filter(m => m.tipo === 'entrada').reduce((a,m) => a + m.valor, 0);
+            const os = movimentacoesOleo.filter(m => m.tipo === 'saida').reduce((a,m) => a + m.valor, 0);
+            const ae = movimentacoesApm.filter(m => m.tipo === 'entrada').reduce((a,m) => a + m.valor, 0);
+            const as = movimentacoesApm.filter(m => m.tipo === 'saida').reduce((a,m) => a + m.valor, 0);
+
+            let html = `
+                <div style="font-family:Arial; max-width:800px; margin:0 auto; background:white; color:black; padding:20px;">
+                    <h1 style="text-align:center; color:black;">RELATÓRIO CONSOLIDADO</h1>
+                    <h2 style="text-align:center; color:black;">PRESTAÇÃO DE CONTAS ESCOLAR</h2>
+                    <p style="text-align:center; color:black;">${new Date().toLocaleDateString('pt-BR')}</p>
+                    <hr style="border:1px solid black;">
+                    <h3 style="color:black;">PROJETO ÓLEO</h3>
+                    <table style="width:100%; border-collapse:collapse; color:black;">
+                        <tr><td style="border:1px solid black; padding:8px; color:black;">Entradas:</td><td style="border:1px solid black; padding:8px; text-align:right; color:black;">R$ ${oe.toFixed(2)}</td></tr>
+                        <tr><td style="border:1px solid black; padding:8px; color:black;">Saídas:</td><td style="border:1px solid black; padding:8px; text-align:right; color:black;">R$ ${os.toFixed(2)}</td></tr>
+                        <tr><td style="border:1px solid black; padding:8px; font-weight:bold; color:black;">Saldo:</td><td style="border:1px solid black; padding:8px; text-align:right; font-weight:bold; color:black;">R$ ${(oe - os).toFixed(2)}</td></tr>
+                    </table>
+                    <h3 style="color:black;">APM</h3>
+                    <table style="width:100%; border-collapse:collapse; color:black;">
+                        <tr><td style="border:1px solid black; padding:8px; color:black;">Entradas:</td><td style="border:1px solid black; padding:8px; text-align:right; color:black;">R$ ${ae.toFixed(2)}</td></tr>
+                        <tr><td style="border:1px solid black; padding:8px; color:black;">Saídas:</td><td style="border:1px solid black; padding:8px; text-align:right; color:black;">R$ ${as.toFixed(2)}</td></tr>
+                        <tr><td style="border:1px solid black; padding:8px; font-weight:bold; color:black;">Saldo:</td><td style="border:1px solid black; padding:8px; text-align:right; font-weight:bold; color:black;">R$ ${(ae - as).toFixed(2)}</td></tr>
+                    </table>
+                    <hr style="border:1px solid black;">
+                    <h3 style="color:black;">RESUMO GERAL</h3>
+                    <table style="width:100%; border-collapse:collapse; color:black;">
+                        <tr><td style="border:1px solid black; padding:8px; color:black;">Total Recursos:</td><td style="border:1px solid black; padding:8px; text-align:right; color:black;">R$ ${(oe + ae).toFixed(2)}</td></tr>
+                        <tr><td style="border:1px solid black; padding:8px; color:black;">Total Despesas:</td><td style="border:1px solid black; padding:8px; text-align:right; color:black;">R$ ${(os + as).toFixed(2)}</td></tr>
+                        <tr><td style="border:1px solid black; padding:8px; font-weight:bold; color:black;">Saldo Total:</td><td style="border:1px solid black; padding:8px; text-align:right; font-weight:bold; color:black;">R$ ${(oe + ae - os - as).toFixed(2)}</td></tr>
+                    </table>
+                    <hr style="border:1px solid black;">
+                    <div style="display:flex; justify-content:space-between; margin-top:50px">
+                        <div style="text-align:center; color:black;">_________________<br>Diretor(a)</div>
+                        <div style="text-align:center; color:black;">_________________<br>Presidente APM</div>
+                        <div style="text-align:center; color:black;">_________________<br>Resp. Óleo</div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('relatorioPreview').innerHTML = html;
+        }
+
+        function imprimirRelatorio() {
+            const conteudo = document.getElementById('relatorioPreview').innerHTML;
+            
+            if (conteudo.includes('Selecione um relatório')) {
+                alert('Gere um relatório primeiro!');
+                return;
+            }
+
+            const janelaImpressao = window.open('', '_blank');
+            
+            janelaImpressao.document.write(`
+                <html>
+                    <head>
+                        <title>Relatório de Prestação de Contas</title>
+                        <style>
+                            body {
+                                font-family: Arial, sans-serif;
+                                margin: 2cm;
+                                color: black;
+                                background: white;
+                            }
+                            table {
+                                border-collapse: collapse;
+                                width: 100%;
+                                margin: 20px 0;
+                            }
+                            th, td {
+                                border: 1px solid black;
+                                padding: 8px;
+                                color: black;
+                            }
+                            h1, h2, h3 {
+                                color: black;
+                            }
+                            hr {
+                                border: 1px solid black;
+                                margin: 30px 0;
+                            }
+                            @page {
+                                size: A4;
+                                margin: 2cm;
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        ${conteudo}
+                        <script>
+                            window.onload = function() {
+                                window.print();
+                                window.onafterprint = function() {
+                                    window.close();
+                                };
+                            };
+                        <\/script>
+                    </body>
+                </html>
+            `);
+            
+            janelaImpressao.document.close();
+        }
+
+        // ============================================
         // FUNÇÕES GERAIS
         // ============================================
         async function carregarTodosDados() {
             const hoje = new Date();
+            const dataAtual = `${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}-${String(hoje.getDate()).padStart(2,'0')}`;
+            
+            // Banco de Horas
             const dataLancamento = document.getElementById('dataLancamento');
-            if (dataLancamento) {
-                dataLancamento.value = `${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}-${String(hoje.getDate()).padStart(2,'0')}`;
-            }
+            if (dataLancamento) dataLancamento.value = dataAtual;
             
             const campoHoras = document.getElementById('horas');
-            if (campoHoras) {
-                campoHoras.addEventListener('input', function() { validarFormatoHoras(this); });
-            }
+            if (campoHoras) campoHoras.addEventListener('input', function() { validarFormatoHoras(this); });
             
-            await carregarDadosBancoHoras();
-            await carregarDadosReunioes();
+            // Prestação de Contas
+            document.getElementById('oleoData').value = dataAtual;
+            document.getElementById('apmData').value = dataAtual;
+            
+            await Promise.all([
+                carregarDadosBancoHoras(),
+                carregarDadosReunioes(),
+                carregarDadosPrestacaoContas()
+            ]);
         }
 
         function fecharModal(modal) {
@@ -2127,11 +2851,16 @@
                 document.getElementById('modalEdicaoLancamento').style.display = 'none';
             } else if (modal === 'edicaoPessoa') {
                 document.getElementById('modalEdicaoPessoa').style.display = 'none';
+            } else if (modal === 'detalhesConta') {
+                document.getElementById('modalDetalhesConta').classList.remove('active');
+            } else if (modal === 'edicaoConta') {
+                document.getElementById('modalEdicaoConta').classList.remove('active');
             }
         }
 
-        // Event listeners dos formulários
+        // Event listeners
         document.addEventListener('DOMContentLoaded', function() {
+            // Formulário Pessoas
             const formPessoa = document.getElementById('formPessoa');
             if (formPessoa) {
                 formPessoa.addEventListener('submit', async function(e) {
@@ -2160,6 +2889,7 @@
                 });
             }
 
+            // Formulário Lançamentos
             const formLancamento = document.getElementById('formLancamento');
             if (formLancamento) {
                 formLancamento.addEventListener('submit', async function(e) {
@@ -2203,6 +2933,73 @@
                 });
             }
 
+            // Formulário Óleo
+            const oleoForm = document.getElementById('oleoForm');
+            if (oleoForm) {
+                oleoForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    
+                    const nova = {
+                        id: Date.now(),
+                        tipo: document.getElementById('oleoTipo').value,
+                        data: document.getElementById('oleoData').value,
+                        descricao: document.getElementById('oleoDescricao').value,
+                        valor: parseFloat(document.getElementById('oleoValor').value),
+                        observacoes: document.getElementById('oleoObservacoes').value
+                    };
+
+                    const { error } = await supabaseClient.from('movimentacoes_oleo').insert([nova]);
+                    
+                    if (!error) {
+                        movimentacoesOleo.unshift(nova);
+                        this.reset();
+                        
+                        const hoje = new Date();
+                        document.getElementById('oleoData').value = `${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}-${String(hoje.getDate()).padStart(2,'0')}`;
+                        
+                        atualizarTabelasContas();
+                        atualizarCardsContas();
+                        mostrarNotificacao('sucesso', 'Registrado!', 'Movimentação adicionada ao Óleo.');
+                    } else {
+                        mostrarNotificacao('erro', 'Erro', error.message);
+                    }
+                });
+            }
+
+            // Formulário APM
+            const apmForm = document.getElementById('apmForm');
+            if (apmForm) {
+                apmForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    
+                    const nova = {
+                        id: Date.now(),
+                        tipo: document.getElementById('apmTipo').value,
+                        data: document.getElementById('apmData').value,
+                        descricao: document.getElementById('apmDescricao').value,
+                        valor: parseFloat(document.getElementById('apmValor').value),
+                        observacoes: document.getElementById('apmObservacoes').value
+                    };
+
+                    const { error } = await supabaseClient.from('movimentacoes_apm').insert([nova]);
+                    
+                    if (!error) {
+                        movimentacoesApm.unshift(nova);
+                        this.reset();
+                        
+                        const hoje = new Date();
+                        document.getElementById('apmData').value = `${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}-${String(hoje.getDate()).padStart(2,'0')}`;
+                        
+                        atualizarTabelasContas();
+                        atualizarCardsContas();
+                        mostrarNotificacao('sucesso', 'Registrado!', 'Movimentação adicionada à APM.');
+                    } else {
+                        mostrarNotificacao('erro', 'Erro', error.message);
+                    }
+                });
+            }
+
+            // Formulário Edição Lançamento
             const formEdicaoLancamento = document.getElementById('formEdicaoLancamento');
             if (formEdicaoLancamento) {
                 formEdicaoLancamento.addEventListener('submit', async function(e) {
@@ -2234,6 +3031,7 @@
                 });
             }
 
+            // Formulário Edição Pessoa
             const formEdicaoPessoa = document.getElementById('formEdicaoPessoa');
             if (formEdicaoPessoa) {
                 formEdicaoPessoa.addEventListener('submit', async function(e) {
@@ -2262,11 +3060,54 @@
                     }
                 });
             }
+
+            // Formulário Edição Conta
+            const formEdicaoConta = document.getElementById('formEdicaoConta');
+            if (formEdicaoConta) {
+                formEdicaoConta.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    
+                    const id = parseInt(document.getElementById('editContaId').value);
+                    const origem = document.getElementById('editContaOrigem').value;
+                    const tabela = origem === 'oleo' ? 'movimentacoes_oleo' : 'movimentacoes_apm';
+                    
+                    const atualizado = {
+                        id: id,
+                        tipo: document.getElementById('editContaTipo').value,
+                        data: document.getElementById('editContaData').value,
+                        descricao: document.getElementById('editContaDescricao').value,
+                        valor: parseFloat(document.getElementById('editContaValor').value),
+                        observacoes: document.getElementById('editContaObservacoes').value
+                    };
+
+                    const { error } = await supabaseClient.from(tabela).update(atualizado).eq('id', id);
+                    
+                    if (!error) {
+                        if (origem === 'oleo') {
+                            const idx = movimentacoesOleo.findIndex(m => m.id === id);
+                            if (idx !== -1) movimentacoesOleo[idx] = atualizado;
+                        } else {
+                            const idx = movimentacoesApm.findIndex(m => m.id === id);
+                            if (idx !== -1) movimentacoesApm[idx] = atualizado;
+                        }
+                        
+                        fecharModal('edicaoConta');
+                        atualizarTabelasContas();
+                        atualizarCardsContas();
+                        mostrarNotificacao('sucesso', 'Atualizado!', 'Movimentação alterada.');
+                    }
+                });
+            }
         });
 
+        // Event listeners para modais
         window.onclick = function(e) {
             if (e.target.classList.contains('modal')) {
-                e.target.style.display = 'none';
+                if (e.target.id === 'modalDetalhesConta' || e.target.id === 'modalEdicaoConta') {
+                    e.target.classList.remove('active');
+                } else {
+                    e.target.style.display = 'none';
+                }
                 if (e.target.id === 'modalHistoricoReunioes') turmaAtualModal = '';
             }
         };
@@ -2290,6 +3131,13 @@
         window.imprimirHistorico = imprimirHistorico;
         window.filtrarTurmas = filtrarTurmas;
         window.limparFiltro = limparFiltro;
+        window.mostrarAbaContas = mostrarAbaContas;
+        window.mostrarDetalhesConta = mostrarDetalhesConta;
+        window.editarMovimentacao = editarMovimentacao;
+        window.excluirMovimentacao = excluirMovimentacao;
+        window.gerarRelatorio = gerarRelatorio;
+        window.gerarRelatorioCompleto = gerarRelatorioCompleto;
+        window.imprimirRelatorio = imprimirRelatorio;
         window.fecharModal = fecharModal;
         window.fecharNotificacao = fecharNotificacao;
 

@@ -1257,7 +1257,7 @@
             <div class="stats-gerais" id="statsGerais">
                 <div class="stat-card">
                     <div class="stat-label">Total de Turmas</div>
-                    <div class="stat-valor" id="totalTurmas">15</div>
+                    <div class="stat-valor" id="totalTurmas">0</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-label">Turmas com Reunião</div>
@@ -2130,10 +2130,11 @@
         }
 
         // ============================================
-        // FUNÇÕES REUNIÃO DE PAIS
+        // FUNÇÕES REUNIÃO DE PAIS (CORRIGIDAS)
         // ============================================
         async function carregarDadosReunioes() {
             try {
+                // Carregar turmas
                 const { data: tData, error: tError } = await supabaseClient
                     .from('turmas')
                     .select('*')
@@ -2141,6 +2142,7 @@
                 
                 if (tError) throw tError;
                 
+                // Carregar reuniões com select para garantir os dados
                 const { data: rData, error: rError } = await supabaseClient
                     .from('reunioes')
                     .select('*')
@@ -2151,12 +2153,15 @@
                 turmas = tData || [];
                 reunioes = rData || [];
                 
+                console.log('Turmas carregadas:', turmas.length);
+                console.log('Reuniões carregadas:', reunioes.length);
+                
                 popularSelectTurmas();
                 renderizarTurmas();
                 atualizarEstatisticasReunioes();
                 
             } catch (erro) {
-                console.error(erro);
+                console.error('Erro ao carregar dados de reuniões:', erro);
                 mostrarNotificacao('erro', 'Erro', erro.message);
             }
         }
@@ -2173,6 +2178,7 @@
         }
 
         function formatarDataReuniao(dataString) {
+            if (!dataString) return '';
             const partes = dataString.split('-');
             return `${partes[2]}/${partes[1]}/${partes[0]}`;
         }
@@ -2226,7 +2232,7 @@
             const alunos = parseInt(document.getElementById('alunosAtivos').value);
             const pais = parseInt(document.getElementById('paisPresentes').value);
 
-            if (!turmaId || !data || !alunos || pais === undefined) {
+            if (!turmaId || !data || !alunos || isNaN(pais)) {
                 mostrarNotificacao('erro', 'Erro', 'Preencha todos os campos!');
                 return;
             }
@@ -2236,28 +2242,40 @@
                 return;
             }
 
+            // CORREÇÃO: Remover o ID manual - deixar o Supabase gerar automaticamente
             const nova = {
-                id: Date.now(),
                 turma_id: turmaId,
                 data: data,
                 alunos_ativos: alunos,
                 pais_presentes: pais
             };
 
-            const { error } = await supabaseClient.from('reunioes').insert([nova]);
-            
-            if (!error) {
-                reunioes.unshift(nova);
+            console.log('Inserindo reunião:', nova);
+
+            const { data: insertedData, error } = await supabaseClient
+                .from('reunioes')
+                .insert([nova])
+                .select();
+
+            if (error) {
+                console.error('Erro detalhado ao inserir:', error);
+                mostrarNotificacao('erro', 'Erro', error.message);
+                return;
+            }
+
+            if (insertedData && insertedData.length > 0) {
+                // Adiciona a nova reunião com o ID gerado pelo Supabase
+                reunioes.unshift(insertedData[0]);
                 
+                // Limpar formulário
                 document.getElementById('dataReuniao').value = '';
                 document.getElementById('alunosAtivos').value = '';
                 document.getElementById('paisPresentes').value = '';
+                document.getElementById('turmaSelect').value = '';
                 
                 renderizarTurmas();
                 atualizarEstatisticasReunioes();
                 mostrarNotificacao('sucesso', 'Sucesso!', 'Reunião cadastrada.');
-            } else {
-                mostrarNotificacao('erro', 'Erro', error.message);
             }
         }
 
@@ -2265,14 +2283,19 @@
             const container = document.getElementById('turmasContainer');
             if (!container) return;
             
-            const filtro = document.getElementById('filtroTurma').value.toLowerCase();
+            const filtroTexto = document.getElementById('filtroTurma').value.toLowerCase();
             
             let turmasFiltradas = turmas;
-            if (filtro) {
-                turmasFiltradas = turmas.filter(t => t.nome.toLowerCase().includes(filtro));
+            if (filtroTexto) {
+                turmasFiltradas = turmas.filter(t => t.nome.toLowerCase().includes(filtroTexto));
             }
 
             container.innerHTML = '';
+
+            if (turmasFiltradas.length === 0) {
+                container.innerHTML = '<div class="card-turma" style="text-align: center;">Nenhuma turma encontrada</div>';
+                return;
+            }
 
             turmasFiltradas.forEach(turma => {
                 const ultimaReuniao = getUltimaReuniao(turma.id);
@@ -2371,14 +2394,16 @@
             });
             
             document.getElementById('modalConteudoReunioes').innerHTML = html;
-            document.getElementById('btnImprimir').disabled = reunioesTurma.length === 0;
             document.getElementById('modalHistoricoReunioes').style.display = 'flex';
         }
 
         async function excluirReuniao(id) {
             if (!confirm('Excluir esta reunião?')) return;
             
-            const { error } = await supabaseClient.from('reunioes').delete().eq('id', id);
+            const { error } = await supabaseClient
+                .from('reunioes')
+                .delete()
+                .eq('id', id);
             
             if (!error) {
                 reunioes = reunioes.filter(r => r.id !== id);
@@ -2390,6 +2415,8 @@
                     if (turma) verHistoricoReunioes(turma.id, turma.nome);
                 }
                 mostrarNotificacao('sucesso', 'Excluída!', 'Reunião removida.');
+            } else {
+                mostrarNotificacao('erro', 'Erro', error.message);
             }
         }
 
@@ -2426,12 +2453,15 @@
                     
                     <h3>Histórico de Reuniões</h3>
                     <table>
-                        <tr>
-                            <th>Data</th>
-                            <th>Alunos</th>
-                            <th>Pais</th>
-                            <th>Presença</th>
-                        </tr>
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Alunos</th>
+                                <th>Pais</th>
+                                <th>Presença</th>
+                            </tr>
+                        </thead>
+                        <tbody>
             `;
 
             reunioesTurma.forEach(r => {
@@ -2447,6 +2477,7 @@
             });
 
             conteudoHTML += `
+                        </tbody>
                     </table>
                 </body>
                 </html>
@@ -2497,11 +2528,10 @@
         }
 
         // ============================================
-        // FUNÇÕES PRESTAÇÃO DE CONTAS
+        // FUNÇÕES PRESTAÇÃO DE CONTAS (NÃO ALTERADAS)
         // ============================================
         async function carregarDadosPrestacaoContas() {
             try {
-                // Carregar movimentações do óleo
                 const { data: oleoData, error: oleoError } = await supabaseClient
                     .from('movimentacoes_oleo')
                     .select('*')
@@ -2509,7 +2539,6 @@
                 
                 if (oleoError) throw oleoError;
                 
-                // Carregar movimentações da APM
                 const { data: apmData, error: apmError } = await supabaseClient
                     .from('movimentacoes_apm')
                     .select('*')
@@ -2520,7 +2549,6 @@
                 movimentacoesOleo = oleoData || [];
                 movimentacoesApm = apmData || [];
                 
-                // Atualizar interface
                 atualizarTabelasContas();
                 atualizarCardsContas();
                 
@@ -2531,7 +2559,6 @@
         }
 
         function atualizarTabelasContas() {
-            // Tabela Óleo
             const oleoBody = document.getElementById('oleoBody');
             if (oleoBody) {
                 if (movimentacoesOleo.length === 0) {
@@ -2549,11 +2576,10 @@
                                 <button class="btn-sm btn-warning" onclick="editarMovimentacao('oleo', ${m.id})">✏️</button>
                                 <button class="btn-sm btn-danger" onclick="excluirMovimentacao('oleo', ${m.id})">🗑️</button>
                             </td>
-                        </tr>`).join('');
+                        <tr>`).join('');
                 }
             }
 
-            // Tabela APM
             const apmBody = document.getElementById('apmBody');
             if (apmBody) {
                 if (movimentacoesApm.length === 0) {
@@ -2577,7 +2603,6 @@
         }
 
         function atualizarCardsContas() {
-            // Calcular totais do Óleo
             const oleoEntradas = movimentacoesOleo
                 .filter(m => m.tipo === 'entrada')
                 .reduce((acc, m) => acc + m.valor, 0);
@@ -2590,7 +2615,6 @@
             document.getElementById('oleoSaidas').textContent = `R$ ${oleoSaidas.toFixed(2)}`;
             document.getElementById('oleoSaldo').textContent = `R$ ${(oleoEntradas - oleoSaidas).toFixed(2)}`;
 
-            // Calcular totais da APM
             const apmEntradas = movimentacoesApm
                 .filter(m => m.tipo === 'entrada')
                 .reduce((acc, m) => acc + m.valor, 0);
@@ -2823,14 +2847,12 @@
             const hoje = new Date();
             const dataAtual = `${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}-${String(hoje.getDate()).padStart(2,'0')}`;
             
-            // Banco de Horas
             const dataLancamento = document.getElementById('dataLancamento');
             if (dataLancamento) dataLancamento.value = dataAtual;
             
             const campoHoras = document.getElementById('horas');
             if (campoHoras) campoHoras.addEventListener('input', function() { validarFormatoHoras(this); });
             
-            // Prestação de Contas
             document.getElementById('oleoData').value = dataAtual;
             document.getElementById('apmData').value = dataAtual;
             
@@ -2860,7 +2882,6 @@
 
         // Event listeners
         document.addEventListener('DOMContentLoaded', function() {
-            // Formulário Pessoas
             const formPessoa = document.getElementById('formPessoa');
             if (formPessoa) {
                 formPessoa.addEventListener('submit', async function(e) {
@@ -2889,7 +2910,6 @@
                 });
             }
 
-            // Formulário Lançamentos
             const formLancamento = document.getElementById('formLancamento');
             if (formLancamento) {
                 formLancamento.addEventListener('submit', async function(e) {
@@ -2933,7 +2953,6 @@
                 });
             }
 
-            // Formulário Óleo
             const oleoForm = document.getElementById('oleoForm');
             if (oleoForm) {
                 oleoForm.addEventListener('submit', async function(e) {
@@ -2966,7 +2985,6 @@
                 });
             }
 
-            // Formulário APM
             const apmForm = document.getElementById('apmForm');
             if (apmForm) {
                 apmForm.addEventListener('submit', async function(e) {
@@ -2999,7 +3017,6 @@
                 });
             }
 
-            // Formulário Edição Lançamento
             const formEdicaoLancamento = document.getElementById('formEdicaoLancamento');
             if (formEdicaoLancamento) {
                 formEdicaoLancamento.addEventListener('submit', async function(e) {
@@ -3031,7 +3048,6 @@
                 });
             }
 
-            // Formulário Edição Pessoa
             const formEdicaoPessoa = document.getElementById('formEdicaoPessoa');
             if (formEdicaoPessoa) {
                 formEdicaoPessoa.addEventListener('submit', async function(e) {
@@ -3061,7 +3077,6 @@
                 });
             }
 
-            // Formulário Edição Conta
             const formEdicaoConta = document.getElementById('formEdicaoConta');
             if (formEdicaoConta) {
                 formEdicaoConta.addEventListener('submit', async function(e) {
@@ -3100,7 +3115,6 @@
             }
         });
 
-        // Event listeners para modais
         window.onclick = function(e) {
             if (e.target.classList.contains('modal')) {
                 if (e.target.id === 'modalDetalhesConta' || e.target.id === 'modalEdicaoConta') {
@@ -3112,7 +3126,6 @@
             }
         };
 
-        // EXPOR FUNÇÕES GLOBAIS
         window.sair = sair;
         window.voltarMenu = voltarMenu;
         window.abrirModulo = abrirModulo;
@@ -3141,8 +3154,47 @@
         window.fecharModal = fecharModal;
         window.fecharNotificacao = fecharNotificacao;
 
-        // INICIAR
         verificarLogin();
+
+        // Instruções para criar as tabelas no Supabase (copiar e executar no SQL Editor)
+        console.log(`
+        ⚠️ IMPORTANTE: Execute os seguintes comandos SQL no Supabase para criar as tabelas necessárias:
+
+        -- Tabela de turmas
+        CREATE TABLE IF NOT EXISTS turmas (
+            id BIGSERIAL PRIMARY KEY,
+            nome VARCHAR(100) NOT NULL,
+            created_at TIMESTAMP DEFAULT NOW()
+        );
+
+        -- Inserir turmas de exemplo
+        INSERT INTO turmas (nome) VALUES 
+        ('1º Ano A'),
+        ('1º Ano B'),
+        ('2º Ano A'),
+        ('2º Ano B'),
+        ('3º Ano A'),
+        ('3º Ano B'),
+        ('4º Ano A'),
+        ('4º Ano B'),
+        ('5º Ano A'),
+        ('5º Ano B')
+        ON CONFLICT (id) DO NOTHING;
+
+        -- Tabela de reuniões (com id auto-incremento)
+        CREATE TABLE IF NOT EXISTS reunioes (
+            id BIGSERIAL PRIMARY KEY,
+            turma_id BIGINT NOT NULL REFERENCES turmas(id) ON DELETE CASCADE,
+            data DATE NOT NULL,
+            alunos_ativos INTEGER NOT NULL,
+            pais_presentes INTEGER NOT NULL,
+            created_at TIMESTAMP DEFAULT NOW()
+        );
+
+        -- Criar índices
+        CREATE INDEX IF NOT EXISTS idx_reunioes_turma_id ON reunioes(turma_id);
+        CREATE INDEX IF NOT EXISTS idx_reunioes_data ON reunioes(data);
+        `);
     </script>
 </body>
 </html>

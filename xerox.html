@@ -1,0 +1,1598 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EMEF José Sabbag • Controle de Xerox</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Roboto, system-ui, sans-serif; margin: 0; padding: 0; }
+        :root {
+            --bg-main: #0a0f16; --bg-card: #131c28; --bg-card-alt: #0f1824; --bg-input: #1a2635;
+            --border: #22303f; --border-light: #2e4155; --text: #e2e8f0; --text-muted: #94a3b8;
+            --text-dim: #64748b; --primary: #1e5f8e; --primary-hover: #164a6e; --primary-light: #3b82f6;
+            --accent: #d4a04a; --accent-dark: #a87d2e; --danger: #c7453a; --success: #16a34a;
+        }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeInScale { from { opacity: 0; transform: scale(0.94); } to { opacity: 1; transform: scale(1); } }
+        @keyframes slideInLeft { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes pulseGlow { 0%, 100% { box-shadow: 0 0 0 0 rgba(212, 160, 74, 0.5); } 50% { box-shadow: 0 0 0 8px rgba(212, 160, 74, 0); } }
+        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+        @keyframes bounceIn { 0% { opacity: 0; transform: scale(0.3); } 50% { opacity: 1; transform: scale(1.05); } 70% { transform: scale(0.95); } 100% { transform: scale(1); } }
+        @keyframes countUp { from { opacity: 0.3; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes glowPulse { 0%, 100% { text-shadow: 0 0 8px rgba(212, 160, 74, 0.4); } 50% { text-shadow: 0 0 16px rgba(212, 160, 74, 0.8); } }
+        @keyframes rotateIcon { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(15deg); } }
+        @keyframes drawLine { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+        @keyframes slideUpIn { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes countFade { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        body {
+            background: var(--bg-main);
+            background-image: linear-gradient(rgba(10, 15, 22, 0.88), rgba(10, 15, 22, 0.92)), url('fundo.png');
+            background-size: cover; background-position: center; background-repeat: no-repeat; background-attachment: fixed;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            min-height: 100vh; padding: 16px; color: var(--text); animation: fadeInUp 0.5s ease;
+        }
+        .institutional-header {
+            max-width: 1200px; width: 100%;
+            background: linear-gradient(135deg, rgba(13, 26, 38, 0.95) 0%, rgba(19, 28, 40, 0.95) 100%);
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            border-radius: 20px 20px 0 0; padding: 20px 32px;
+            display: flex; align-items: center; justify-content: space-between; gap: 20px;
+            border: 1px solid var(--border); border-bottom: none; flex-wrap: wrap;
+            animation: fadeInDown 0.6s ease; position: relative; overflow: hidden;
+        }
+        .institutional-header::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 3px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            background-size: 200% 100%; animation: shimmer 4s linear infinite;
+        }
+        .institutional-header .brand { display: flex; align-items: center; gap: 16px; }
+        .institutional-header .brand-logo {
+            width: 58px; height: 58px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            border-radius: 14px; display: flex; align-items: center; justify-content: center;
+            font-size: 1.8rem; color: white; flex-shrink: 0;
+            box-shadow: 0 4px 16px rgba(30, 95, 142, 0.4);
+            border: 2px solid rgba(212, 160, 74, 0.3);
+            animation: bounceIn 0.7s ease; transition: transform 0.3s ease;
+        }
+        .institutional-header .brand-logo:hover { transform: scale(1.08) rotate(-4deg); box-shadow: 0 6px 20px rgba(212, 160, 74, 0.5); }
+        .institutional-header .brand-text h1 { font-size: 1.35rem; font-weight: 700; color: #f1f5f9; letter-spacing: -0.3px; line-height: 1.2; margin-bottom: 3px; }
+        .institutional-header .brand-text .subtitle { font-size: 0.78rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 500; }
+        .institutional-header .header-meta { text-align: right; font-size: 0.75rem; color: var(--text-dim); line-height: 1.6; }
+        .institutional-header .header-meta .prefeitura { color: var(--accent); font-weight: 600; font-size: 0.8rem; letter-spacing: 0.5px; }
+        .app-container {
+            max-width: 1200px; width: 100%;
+            background: rgba(19, 28, 40, 0.92);
+            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            border-radius: 0 0 20px 20px; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+            padding: 24px 32px 28px; border: 1px solid var(--border); border-top: 1px solid var(--border-light);
+            animation: slideUpIn 0.6s ease 0.1s both;
+        }
+        .nav-tabs {
+            display: flex; gap: 6px; background: var(--bg-card-alt);
+            padding: 6px; border-radius: 60px; border: 1px solid var(--border);
+            margin-bottom: 24px; width: fit-content; animation: fadeInUp 0.5s ease 0.2s both;
+        }
+        .nav-tabs button {
+            border: none; background: transparent; padding: 10px 22px;
+            font-size: 0.92rem; font-weight: 500; border-radius: 40px; cursor: pointer;
+            color: var(--text-muted); transition: all 0.25s ease; font-family: inherit;
+            position: relative; overflow: hidden;
+        }
+        .nav-tabs button::before {
+            content: ''; position: absolute; inset: 0;
+            background: radial-gradient(circle, rgba(212, 160, 74, 0.2) 0%, transparent 70%);
+            opacity: 0; transform: scale(0); transition: transform 0.4s ease, opacity 0.3s ease;
+        }
+        .nav-tabs button:hover { color: #cbd5e1; }
+        .nav-tabs button:hover::before { opacity: 1; transform: scale(1.5); }
+        .nav-tabs button.active { background: var(--primary); color: white; box-shadow: 0 3px 10px rgba(30, 95, 142, 0.4); font-weight: 600; transform: scale(1.02); }
+        .page { display: none; }
+        .page.active { display: block; animation: fadeInUp 0.35s ease; }
+        .mes-selector {
+            background: var(--bg-card-alt); border-radius: 16px; padding: 16px 22px;
+            border: 1px solid var(--border); margin-bottom: 20px;
+            display: flex; flex-wrap: wrap; align-items: center; gap: 16px;
+            animation: fadeInUp 0.4s ease 0.15s both; transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        .mes-selector:hover { border-color: rgba(30, 95, 142, 0.4); box-shadow: 0 4px 20px rgba(30, 95, 142, 0.1); }
+        .mes-selector label { font-weight: 600; color: #cbd5e1; font-size: 0.9rem; }
+        .mes-selector select {
+            padding: 10px 16px; border-radius: 10px; border: 1px solid var(--border-light);
+            font-size: 0.95rem; background: var(--bg-input); color: var(--text);
+            outline: none; min-width: 240px; cursor: pointer; font-family: inherit; transition: all 0.2s ease;
+        }
+        .mes-selector select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(30, 95, 142, 0.25); }
+        .resumo-mes {
+            margin-left: auto; font-size: 0.9rem; color: var(--text-muted);
+            background: var(--bg-input); padding: 10px 18px; border-radius: 10px;
+            border: 1px solid var(--border); transition: transform 0.3s ease;
+        }
+        .resumo-mes:hover { transform: scale(1.03); }
+        .resumo-mes strong { color: var(--accent); font-size: 1.1rem; font-weight: 700; display: inline-block; animation: countFade 0.5s ease; }
+        .btn-imprimir {
+            background: transparent; color: var(--accent); border: 1.5px solid var(--accent-dark);
+            padding: 10px 20px; border-radius: 10px; font-weight: 600; font-size: 0.88rem;
+            height: auto; display: inline-flex; align-items: center; gap: 8px; cursor: pointer;
+            transition: all 0.25s ease; font-family: inherit; position: relative; overflow: hidden;
+        }
+        .btn-imprimir::after {
+            content: ''; position: absolute; top: 50%; left: 50%; width: 0; height: 0;
+            background: radial-gradient(circle, rgba(212, 160, 74, 0.3) 0%, transparent 70%);
+            transition: width 0.4s ease, height 0.4s ease;
+            transform: translate(-50%, -50%); border-radius: 50%; pointer-events: none;
+        }
+        .btn-imprimir:hover { background: rgba(212, 160, 74, 0.1); border-color: var(--accent); color: #e8b862; transform: translateY(-1px); }
+        .btn-imprimir:hover::after { width: 200px; height: 200px; }
+        .btn-imprimir:hover span.icon { animation: rotateIcon 0.6s ease; }
+        .lancamento-card {
+            background: var(--bg-card-alt); border-radius: 16px; padding: 22px 26px;
+            border: 1px solid var(--border); margin-bottom: 26px; position: relative; overflow: hidden;
+            animation: fadeInUp 0.5s ease 0.2s both; transition: border-color 0.3s ease;
+        }
+        .lancamento-card:hover { border-color: rgba(30, 95, 142, 0.35); }
+        .lancamento-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1.3fr auto; gap: 14px; align-items: end; }
+        .input-group { display: flex; flex-direction: column; min-width: 0; }
+        .input-group label {
+            font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
+            color: var(--text-muted); margin-bottom: 8px; display: flex; align-items: center; gap: 6px;
+        }
+        .input-group label .opcional { font-size: 0.62rem; color: var(--accent); text-transform: none; letter-spacing: 0; font-weight: 500; }
+        select, input[type="number"], input[type="text"], input[type="date"] {
+            padding: 12px 16px; border-radius: 10px; border: 1px solid var(--border-light);
+            background: var(--bg-input); color: var(--text); font-size: 0.95rem;
+            outline: none; transition: all 0.25s ease; font-family: inherit; width: 100%; height: 44px;
+        }
+        select:focus, input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(30, 95, 142, 0.25); transform: translateY(-1px); }
+        input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.8); cursor: pointer; }
+        button {
+            background: var(--primary); color: white; border: none; padding: 12px 26px;
+            border-radius: 10px; font-weight: 600; font-size: 0.95rem; cursor: pointer;
+            transition: all 0.25s ease; display: inline-flex; align-items: center; justify-content: center;
+            gap: 8px; white-space: nowrap; height: 44px; font-family: inherit; position: relative; overflow: hidden;
+        }
+        button:hover { background: var(--primary-hover); transform: translateY(-2px); box-shadow: 0 6px 18px rgba(30, 95, 142, 0.35); }
+        button:active { transform: translateY(0) scale(0.98); }
+        button.outline { background: transparent; color: var(--primary-light); border: 1.5px solid var(--border-light); }
+        button.outline:hover { background: var(--bg-input); border-color: var(--primary-light); }
+        button.danger { background: var(--danger); }
+        button.danger:hover { background: #a13229; box-shadow: 0 6px 18px rgba(199, 69, 58, 0.35); }
+        button.small { padding: 6px 14px; font-size: 0.82rem; height: auto; }
+        button.icon-btn {
+            padding: 0; width: 32px; height: 32px; border-radius: 8px; background: transparent;
+            color: var(--text-muted); border: 1px solid var(--border-light); font-size: 0.85rem;
+            transition: all 0.25s ease;
+        }
+        button.icon-btn:hover { background: var(--bg-input); color: var(--text); border-color: var(--primary); transform: rotate(-8deg) scale(1.1); }
+        @keyframes flashSuccess {
+            0% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.7); border-color: var(--success); }
+            50% { box-shadow: 0 0 0 12px rgba(22, 163, 74, 0); border-color: var(--success); }
+            100% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0); border-color: var(--border); }
+        }
+        .lancamento-card.flash-sucesso { animation: flashSuccess 0.8s ease; }
+        @keyframes pulseBtn { 0%, 100% { transform: scale(1); } 50% { transform: scale(0.96); } }
+        .btn-registrar.pulsando { animation: pulseBtn 0.3s ease; }
+        .btn-registrar.sucesso { background: var(--success) !important; transition: background 0.2s; }
+        .toast-flutuante {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px);
+            background: linear-gradient(135deg, #16a34a, #15803d); color: white;
+            padding: 14px 26px; border-radius: 40px; font-weight: 600; font-size: 0.95rem;
+            box-shadow: 0 10px 30px rgba(22, 163, 74, 0.4); display: flex; align-items: center; gap: 10px;
+            z-index: 3000; opacity: 0; pointer-events: none;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        }
+        .toast-flutuante.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        .toast-flutuante .toast-icone { font-size: 1.2rem; animation: bounceIn 0.6s ease; }
+        .rankings-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 26px; }
+        .ranking-card {
+            background: var(--bg-card-alt); border-radius: 16px; padding: 20px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3); border: 1px solid var(--border);
+            cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative; overflow: hidden; animation: fadeInScale 0.5s ease both;
+        }
+        .ranking-card:nth-child(1) { animation-delay: 0.25s; }
+        .ranking-card:nth-child(2) { animation-delay: 0.30s; }
+        .ranking-card:nth-child(3) { animation-delay: 0.35s; }
+        .ranking-card:nth-child(4) { animation-delay: 0.40s; }
+        .ranking-card:nth-child(5) { animation-delay: 0.45s; }
+        .ranking-card::before {
+            content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(30, 95, 142, 0.1), transparent);
+            transition: left 0.6s ease; pointer-events: none;
+        }
+        .ranking-card:hover::before { left: 100%; }
+        .ranking-card:hover { border-color: var(--primary); transform: translateY(-4px) scale(1.01); box-shadow: 0 10px 30px rgba(30, 95, 142, 0.25); }
+        .ranking-card.cota { border-color: rgba(212, 160, 74, 0.35); }
+        .ranking-card.cota:hover { border-color: var(--accent); box-shadow: 0 10px 30px rgba(212, 160, 74, 0.25); }
+        .ranking-card h3 {
+            font-size: 1rem; font-weight: 600; color: #f1f5f9; margin-bottom: 16px;
+            display: flex; align-items: center; justify-content: space-between; gap: 8px;
+            border-bottom: 1px solid var(--border); padding-bottom: 10px; position: relative;
+        }
+        .ranking-card h3::after {
+            content: ''; position: absolute; bottom: -1px; left: 0; width: 40px; height: 2px;
+            background: var(--accent); border-radius: 1px; transform-origin: left;
+            animation: drawLine 0.6s ease 0.4s both;
+        }
+        .ranking-card h3 .hint { font-size: 0.68rem; font-weight: 400; color: var(--text-dim); text-transform: none; letter-spacing: 0; transition: color 0.3s ease; }
+        .ranking-card:hover h3 .hint { color: var(--accent); }
+        .ranking-list { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+        .ranking-list li {
+            display: flex; align-items: center; justify-content: space-between; font-size: 0.92rem;
+            padding: 2px 0; animation: fadeInUp 0.35s ease both;
+            transition: background 0.2s ease, transform 0.2s ease;
+            border-radius: 6px; padding: 4px 6px; margin: 0 -6px;
+        }
+        .ranking-list li:hover { background: rgba(30, 95, 142, 0.12); transform: translateX(3px); }
+        .ranking-list li:nth-child(1) { animation-delay: 0.5s; }
+        .ranking-list li:nth-child(2) { animation-delay: 0.55s; }
+        .ranking-list li:nth-child(3) { animation-delay: 0.6s; }
+        .ranking-list li:nth-child(4) { animation-delay: 0.65s; }
+        .ranking-list li:nth-child(5) { animation-delay: 0.7s; }
+        .ranking-list li:nth-child(6) { animation-delay: 0.75s; }
+        .ranking-list li:nth-child(n+7) { animation-delay: 0.8s; }
+        .ranking-list .name { font-weight: 500; color: #cbd5e1; display: flex; align-items: center; gap: 10px; }
+        .ranking-list .badge {
+            background: var(--bg-input); color: var(--accent); font-weight: 600; font-size: 0.8rem;
+            padding: 4px 12px; border-radius: 40px; min-width: 60px; text-align: center;
+            border: 1px solid var(--border); transition: all 0.25s ease; animation: countUp 0.4s ease;
+        }
+        .ranking-list li:hover .badge { transform: scale(1.05); background: rgba(212, 160, 74, 0.12); }
+        .ranking-card.cota .ranking-list .badge { color: var(--accent); background: rgba(212, 160, 74, 0.1); border-color: rgba(212, 160, 74, 0.3); }
+        .position {
+            width: 26px; height: 26px; background: var(--border); border-radius: 50%;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 0.75rem; font-weight: 700; color: var(--accent); flex-shrink: 0;
+            transition: transform 0.3s ease;
+        }
+        .ranking-list li:hover .position { transform: scale(1.15) rotate(-6deg); }
+        .ranking-list li:nth-child(1) .position { background: rgba(212, 160, 74, 0.25); animation: pulseGlow 2s ease infinite; }
+        .ranking-list li:nth-child(2) .position { background: rgba(148, 163, 184, 0.25); }
+        .ranking-list li:nth-child(3) .position { background: rgba(180, 83, 9, 0.25); }
+        .empty-message { color: var(--text-dim); font-size: 0.85rem; text-align: center; padding: 16px 0; }
+        .historico-card {
+            background: var(--bg-card-alt); border-radius: 16px; padding: 22px 26px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3); border: 1px solid var(--border);
+            animation: fadeInUp 0.5s ease 0.5s both; transition: border-color 0.3s ease;
+        }
+        .historico-card:hover { border-color: rgba(30, 95, 142, 0.25); }
+        .historico-card h3 {
+            font-size: 1.05rem; font-weight: 600; color: #f1f5f9; margin-bottom: 16px;
+            display: flex; align-items: center; justify-content: space-between; gap: 8px;
+        }
+        table { width: 100%; border-collapse: collapse; background: transparent; }
+        th { text-align: left; padding: 12px 16px; background: var(--bg-input); color: var(--text-muted); font-weight: 600; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        th:first-child { border-radius: 8px 0 0 8px; }
+        th:last-child { border-radius: 0 8px 8px 0; }
+        td { padding: 12px 16px; border-top: 1px solid var(--border); color: #cbd5e1; font-size: 0.9rem; transition: color 0.2s ease; }
+        tbody tr { animation: fadeInUp 0.4s ease both; transition: background 0.2s ease; }
+        tbody tr:nth-child(1) { animation-delay: 0.55s; }
+        tbody tr:nth-child(2) { animation-delay: 0.60s; }
+        tbody tr:nth-child(3) { animation-delay: 0.65s; }
+        tbody tr:nth-child(4) { animation-delay: 0.70s; }
+        tbody tr:nth-child(5) { animation-delay: 0.75s; }
+        tbody tr:nth-child(6) { animation-delay: 0.80s; }
+        tbody tr:nth-child(n+7) { animation-delay: 0.85s; }
+        tbody tr:hover { background: rgba(30, 95, 142, 0.08); }
+        .acoes { display: flex; gap: 8px; justify-content: flex-end; }
+        .msg-vazio { padding: 30px 20px; text-align: center; color: var(--text-dim); }
+        .paginacao { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px; flex-wrap: wrap; animation: fadeInUp 0.4s ease 0.85s both; }
+        .paginacao .info-pag { font-size: 0.8rem; color: var(--text-dim); }
+        .paginacao .botoes-pag { display: flex; gap: 6px; flex-wrap: wrap; }
+        .pag-btn {
+            background: transparent; color: var(--text-muted); border: 1px solid var(--border-light);
+            padding: 6px 12px; border-radius: 8px; font-size: 0.82rem; font-weight: 500;
+            cursor: pointer; transition: all 0.2s ease; height: auto; min-width: 32px;
+        }
+        .pag-btn:hover:not(:disabled) { background: var(--bg-input); color: var(--text); border-color: var(--primary); transform: translateY(-1px); }
+        .pag-btn.active { background: var(--primary); color: white; border-color: var(--primary); font-weight: 700; animation: bounceIn 0.4s ease; }
+        .pag-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+        .pag-btn.nav { padding: 6px 14px; }
+        .cota-badge {
+            display: inline-block; padding: 2px 10px; border-radius: 40px; font-size: 0.72rem;
+            font-weight: 600; background: rgba(212, 160, 74, 0.15); color: var(--accent);
+            border: 1px solid rgba(212, 160, 74, 0.35); margin-left: 6px; animation: fadeInScale 0.3s ease;
+        }
+        .cota-badge.zero { display: none; }
+        .pessoas-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; animation: fadeInUp 0.4s ease both; }
+        .pessoas-header h2 { font-size: 1.25rem; color: #f1f5f9; }
+        .cadastro-form {
+            display: flex; gap: 12px; flex-wrap: wrap; background: var(--bg-card-alt);
+            padding: 18px 22px; border-radius: 16px; border: 1px solid var(--border);
+            margin-bottom: 24px; align-items: flex-end; animation: fadeInUp 0.4s ease 0.1s both;
+            transition: border-color 0.3s ease;
+        }
+        .cadastro-form:hover { border-color: rgba(30, 95, 142, 0.3); }
+        .cadastro-form .input-group { min-width: 220px; flex: 1; }
+        .total-copias { font-weight: 700; color: var(--accent); }
+        .professor-nome-link {
+            color: #cbd5e1; font-weight: 600; cursor: pointer;
+            border-bottom: 1px dashed var(--primary-light); transition: all 0.25s ease; display: inline-block;
+        }
+        .professor-nome-link:hover { color: var(--accent); border-bottom-color: var(--accent); transform: translateX(3px); }
+        footer {
+            margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--border);
+            font-size: 0.75rem; color: var(--text-dim); text-align: center;
+            line-height: 1.7; animation: fadeInUp 0.5s ease 0.7s both;
+        }
+        footer .dev { color: var(--accent); font-weight: 600; transition: text-shadow 0.3s ease; }
+        footer .dev:hover { text-shadow: 0 0 10px rgba(212, 160, 74, 0.6); }
+        footer .institution { color: var(--text-muted); font-weight: 600; font-size: 0.8rem; display: block; margin-bottom: 4px; }
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(4px);
+            display: none; align-items: center; justify-content: center; z-index: 1000;
+            padding: 16px; animation: fadeInScale 0.25s ease;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal {
+            background: var(--bg-card); border-radius: 18px; border: 1px solid var(--border-light);
+            width: 100%; max-width: 620px; max-height: 90vh; display: flex; flex-direction: column;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7); animation: bounceIn 0.4s ease; overflow: hidden;
+        }
+        .modal-header {
+            padding: 20px 24px 14px; border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between; gap: 12px;
+            background: linear-gradient(135deg, rgba(30, 95, 142, 0.15), transparent);
+            flex-shrink: 0; position: relative;
+        }
+        .modal-header::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            background-size: 200% 100%; animation: shimmer 3s linear infinite;
+        }
+        .modal-header h3 { font-size: 1.1rem; font-weight: 600; color: #f1f5f9; display: flex; align-items: center; gap: 10px; animation: fadeInUp 0.4s ease; }
+        .modal-close {
+            background: transparent; border: none; color: var(--text-muted); font-size: 1.5rem;
+            cursor: pointer; width: 32px; height: 32px; border-radius: 8px;
+            display: inline-flex; align-items: center; justify-content: center;
+            padding: 0; transition: all 0.25s ease;
+        }
+        .modal-close:hover { background: var(--bg-input); color: var(--text); transform: rotate(90deg) scale(1.1); }
+        .modal-body { padding: 18px 24px 22px; overflow-y: auto; flex: 1; animation: fadeInUp 0.4s ease 0.1s both; }
+        .modal-footer {
+            padding: 14px 24px 20px; display: flex; gap: 10px; justify-content: flex-end;
+            flex-wrap: wrap; border-top: 1px solid var(--border); flex-shrink: 0;
+            animation: fadeInUp 0.4s ease 0.15s both;
+        }
+        .form-field { display: flex; flex-direction: column; margin-bottom: 14px; animation: fadeInUp 0.35s ease both; }
+        .form-field:nth-child(2) { animation-delay: 0.05s; }
+        .form-field:nth-child(3) { animation-delay: 0.10s; }
+        .form-field:nth-child(4) { animation-delay: 0.15s; }
+        .form-field label {
+            font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px;
+            color: var(--text-muted); margin-bottom: 8px; display: flex; align-items: center; gap: 6px;
+        }
+        .form-field label .opcional { font-size: 0.62rem; color: var(--accent); text-transform: none; letter-spacing: 0; font-weight: 500; }
+        .modal-info-row {
+            display: flex; justify-content: space-between; align-items: center; padding: 10px 0;
+            border-bottom: 1px solid var(--border); font-size: 0.9rem;
+            animation: slideInLeft 0.35s ease both; transition: background 0.2s ease;
+        }
+        .modal-info-row:nth-child(2) { animation-delay: 0.05s; }
+        .modal-info-row:nth-child(3) { animation-delay: 0.10s; }
+        .modal-info-row:nth-child(4) { animation-delay: 0.15s; }
+        .modal-info-row:nth-child(5) { animation-delay: 0.20s; }
+        .modal-info-row:hover { background: rgba(30, 95, 142, 0.05); }
+        .modal-info-row:last-child { border-bottom: none; }
+        .modal-info-row .label { color: var(--text-muted); }
+        .modal-info-row .value { color: var(--text); font-weight: 600; }
+        .modal-info-row .value.highlight { color: var(--accent); }
+        .modal-lista-lancamentos { margin-top: 12px; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; animation: fadeInScale 0.4s ease 0.2s both; }
+        .modal-lista-lancamentos table { font-size: 0.85rem; }
+        .modal-lista-lancamentos th { padding: 10px 12px; font-size: 0.72rem; }
+        .modal-lista-lancamentos td { padding: 8px 12px; }
+        .modal-total-destaque {
+            display: flex; align-items: center; justify-content: space-between;
+            background: var(--bg-card-alt); border: 1px solid var(--border); border-radius: 10px;
+            padding: 14px 18px; margin-bottom: 14px; animation: fadeInScale 0.4s ease both;
+            transition: all 0.25s ease;
+        }
+        .modal-total-destaque:hover { border-color: rgba(212, 160, 74, 0.4); transform: translateY(-1px); }
+        .modal-total-destaque .label { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; font-weight: 600; }
+        .modal-total-destaque .num { font-size: 1.5rem; font-weight: 700; color: var(--accent); animation: glowPulse 3s ease infinite; }
+        .nome-clickable {
+            color: var(--accent); cursor: pointer; border-bottom: 1px dashed var(--accent-dark);
+            transition: all 0.25s ease; display: inline-block;
+        }
+        .nome-clickable:hover { color: #e8b862; transform: translateX(2px); text-shadow: 0 0 8px rgba(212, 160, 74, 0.5); }
+        .modal .paginacao { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); animation-delay: 0.25s; }
+        @media (max-width: 960px) {
+            .lancamento-grid { grid-template-columns: 1fr 1fr 1fr; }
+            .lancamento-grid .btn-lancar-wrap { grid-column: 1 / -1; }
+            .lancamento-grid .btn-lancar-wrap button { width: 100%; }
+        }
+        @media (max-width: 820px) {
+            .lancamento-grid { grid-template-columns: 1fr 1fr; }
+            .institutional-header { padding: 16px 20px; }
+            .institutional-header .brand-text h1 { font-size: 1.1rem; }
+        }
+        @media (max-width: 520px) {
+            .lancamento-grid { grid-template-columns: 1fr; }
+            .app-container { padding: 18px 16px; }
+            .institutional-header .header-meta { display: none; }
+        }
+        .relatorio-overlay {
+            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.88); backdrop-filter: blur(6px);
+            display: none; align-items: flex-start; justify-content: center; z-index: 2000;
+            padding: 30px 16px; overflow-y: auto;
+        }
+        .relatorio-overlay.active { display: flex; animation: fadeIn 0.3s ease; }
+        .relatorio-container {
+            background: white; color: #111; width: 100%; max-width: 900px; border-radius: 8px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7); overflow: hidden; animation: slideUpIn 0.4s ease;
+        }
+        .relatorio-toolbar {
+            background: var(--bg-card); padding: 14px 22px; display: flex; align-items: center;
+            justify-content: space-between; gap: 10px; flex-wrap: wrap; border-bottom: 1px solid var(--border);
+        }
+        .relatorio-toolbar h3 { color: var(--text); font-size: 1rem; display: flex; align-items: center; gap: 8px; }
+        .relatorio-toolbar .toolbar-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+        .relatorio-toolbar button { height: 40px; padding: 0 18px; font-size: 0.88rem; }
+        .relatorio-toolbar button.sec { background: transparent; color: #cbd5e1; border: 1px solid var(--border-light); }
+        .relatorio-toolbar button.sec:hover { background: var(--bg-input); border-color: var(--primary); color: var(--text); }
+        .relatorio-scroll { max-height: calc(100vh - 180px); overflow-y: auto; padding: 30px; background: #e5e7eb; }
+        .documento {
+            background: white; padding: 40px 45px; color: #1a1a1a; font-family: 'Segoe UI', Arial, sans-serif;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15); max-width: 800px; margin: 0 auto; animation: fadeInUp 0.5s ease;
+        }
+        .doc-header {
+            display: flex; align-items: center; justify-content: space-between; padding-bottom: 20px;
+            border-bottom: 3px solid #1e5f8e; margin-bottom: 24px; gap: 20px; flex-wrap: wrap;
+            animation: fadeInDown 0.5s ease;
+        }
+        .doc-header .logo-area { display: flex; align-items: center; gap: 14px; }
+        .doc-header .logo-icon {
+            width: 56px; height: 56px; background: linear-gradient(135deg, #1e5f8e, #3b82f6);
+            border-radius: 12px; display: flex; align-items: center; justify-content: center;
+            font-size: 1.8rem; color: white; flex-shrink: 0; border: 2px solid #d4a04a;
+        }
+        .doc-header .titulos h1 { font-size: 1.25rem; font-weight: 700; color: #0b2b4a; margin-bottom: 2px; line-height: 1.2; }
+        .doc-header .titulos .escola { font-size: 0.78rem; color: #a87d2e; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; }
+        .doc-header .titulos p { font-size: 0.78rem; color: #64748b; margin-top: 2px; }
+        .doc-header .doc-meta { text-align: right; font-size: 0.75rem; color: #475569; line-height: 1.6; }
+        .doc-header .doc-meta .doc-id { font-weight: 700; color: #1e5f8e; font-family: 'Courier New', monospace; font-size: 0.82rem; }
+        .doc-title-block {
+            background: linear-gradient(135deg, #f0f7fd, #e0eefa); border-left: 5px solid #1e5f8e;
+            padding: 18px 22px; border-radius: 6px; margin-bottom: 24px; animation: slideInLeft 0.5s ease 0.1s both;
+        }
+        .doc-title-block h2 { font-size: 1.15rem; color: #0b2b4a; margin-bottom: 6px; font-weight: 700; }
+        .doc-title-block .periodo { font-size: 0.9rem; color: #1e5f8e; font-weight: 600; }
+        .doc-section { margin-bottom: 26px; animation: fadeInUp 0.5s ease both; }
+        .doc-section:nth-child(2) { animation-delay: 0.15s; }
+        .doc-section:nth-child(3) { animation-delay: 0.25s; }
+        .doc-section:nth-child(4) { animation-delay: 0.35s; }
+        .doc-section:nth-child(5) { animation-delay: 0.45s; }
+        .doc-section:nth-child(6) { animation-delay: 0.55s; }
+        .doc-section h3 {
+            font-size: 0.9rem; font-weight: 700; color: #0b2b4a; text-transform: uppercase;
+            letter-spacing: 0.6px; padding-bottom: 6px; border-bottom: 1.5px solid #dbe4ef;
+            margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+        }
+        .doc-section h3::before { content: ''; display: inline-block; width: 4px; height: 16px; background: #1e5f8e; border-radius: 2px; }
+        .doc-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 20px; }
+        .doc-card {
+            background: #f8fbfe; border: 1px solid #dbe4ef; border-radius: 8px; padding: 14px 16px;
+            text-align: center; animation: bounceIn 0.5s ease both; transition: all 0.25s ease;
+        }
+        .doc-card:nth-child(1) { animation-delay: 0.2s; }
+        .doc-card:nth-child(2) { animation-delay: 0.25s; }
+        .doc-card:nth-child(3) { animation-delay: 0.30s; }
+        .doc-card:nth-child(4) { animation-delay: 0.35s; }
+        .doc-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(30, 95, 142, 0.15); border-color: #1e5f8e; }
+        .doc-card .num { font-size: 1.5rem; font-weight: 700; color: #1e5f8e; line-height: 1; margin-bottom: 4px; }
+        .doc-card .lbl { font-size: 0.7rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+        .doc-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; margin-bottom: 10px; }
+        .doc-table thead { background: #1e5f8e; color: white; }
+        .doc-table th {
+            padding: 10px 12px; text-align: left; font-size: 0.72rem; text-transform: uppercase;
+            letter-spacing: 0.5px; font-weight: 700; border: 1px solid #1e5f8e;
+        }
+        .doc-table th.center { text-align: center; }
+        .doc-table th.right { text-align: right; }
+        .doc-table td { padding: 9px 12px; border: 1px solid #dbe4ef; color: #1e3b5a; background: white; }
+        .doc-table tbody tr:nth-child(even) td { background: #f8fbfe; }
+        .doc-table td.center { text-align: center; }
+        .doc-table td.right { text-align: right; }
+        .doc-table td strong { color: #0b2b4a; }
+        .doc-table .rank-pos {
+            display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px;
+            border-radius: 50%; background: #e0eefa; color: #1e5f8e; font-weight: 700; font-size: 0.72rem;
+        }
+        .doc-table .rank-pos.ouro { background: #fef3c7; color: #b45309; }
+        .doc-table .rank-pos.prata { background: #e2e8f0; color: #475569; }
+        .doc-table .rank-pos.bronze { background: #fed7aa; color: #9a3412; }
+        .doc-total-row td { background: #f0f7fd !important; font-weight: 700; color: #0b2b4a; border-top: 2px solid #1e5f8e; }
+        .doc-empty {
+            padding: 20px; text-align: center; color: #94a3b8; font-style: italic;
+            font-size: 0.82rem; background: #f8fbfe; border-radius: 6px; border: 1px dashed #dbe4ef;
+        }
+        .doc-footer {
+            margin-top: 36px; padding-top: 18px; border-top: 2px solid #1e5f8e;
+            display: flex; justify-content: space-between; align-items: flex-end; gap: 20px;
+            flex-wrap: wrap; font-size: 0.7rem; color: #64748b; animation: fadeInUp 0.5s ease 0.6s both;
+        }
+        .doc-footer .footer-info { line-height: 1.6; }
+        .doc-footer .footer-info strong { color: #1e5f8e; font-size: 0.78rem; }
+        .doc-footer .footer-dev { text-align: right; line-height: 1.6; }
+        .doc-footer .footer-dev .dev-name { color: #a87d2e; font-weight: 700; font-size: 0.82rem; }
+        .doc-signature { margin-top: 30px; text-align: center; animation: fadeInUp 0.5s ease 0.55s both; }
+        .doc-signature .linha { width: 260px; margin: 0 auto 4px; border-top: 1px solid #94a3b8; }
+        .doc-signature .cargo { font-size: 0.72rem; color: #64748b; }
+        .doc-watermark { text-align: center; font-size: 0.68rem; color: #94a3b8; margin-top: 8px; }
+        @media print {
+            @page { size: A4; margin: 12mm 12mm; }
+            body { background: white !important; color: #000 !important; padding: 0 !important; margin: 0 !important; display: block !important; min-height: auto !important; background-image: none !important; }
+            .institutional-header, .app-container, .modal-overlay, .relatorio-toolbar { display: none !important; }
+            .relatorio-overlay { position: static !important; display: block !important; background: white !important; backdrop-filter: none !important; padding: 0 !important; overflow: visible !important; }
+            .relatorio-container { box-shadow: none !important; border-radius: 0 !important; max-width: 100% !important; width: 100% !important; }
+            .relatorio-scroll { max-height: none !important; overflow: visible !important; padding: 0 !important; background: white !important; }
+            .documento { box-shadow: none !important; padding: 0 !important; max-width: 100% !important; margin: 0 !important; }
+            .doc-header { page-break-after: avoid; }
+            .doc-section { page-break-inside: avoid; }
+            .doc-table { page-break-inside: auto; }
+            .doc-table tr { page-break-inside: avoid; }
+            .doc-footer { page-break-before: avoid; }
+            .doc-table thead { display: table-header-group; }
+            .doc-table tbody tr:nth-child(even) td { background: #f8fbfe !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .doc-table thead th, .doc-card, .doc-title-block { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        }
+    </style>
+</head>
+<body>
+<div class="institutional-header">
+    <div class="brand">
+        <div class="brand-logo">🏫</div>
+        <div class="brand-text">
+            <h1>EMEF José Sabbag</h1>
+            <div class="subtitle">Controle de Reprografia</div>
+        </div>
+    </div>
+    <div class="header-meta">
+        <div class="prefeitura">Prefeitura Municipal</div>
+        <div>Secretaria de Educação</div>
+        <div>Sistema de Gestão Escolar</div>
+    </div>
+</div>
+
+<div class="app-container">
+    <div class="nav-tabs">
+        <button id="tabPrincipal" class="active" onclick="switchPage('principal')">📊 Painel Mensal</button>
+        <button id="tabPessoas" onclick="switchPage('pessoas')">👥 Gerenciar Professores</button>
+    </div>
+
+    <div id="pagePrincipal" class="page active">
+        <div class="mes-selector">
+            <label for="selectMes">📅 Mês de referência:</label>
+            <select id="selectMes" onchange="aoTrocarMes()"></select>
+            <div class="resumo-mes">Total do mês: <strong id="totalMes">0</strong> cópias</div>
+            <button class="btn-imprimir" onclick="abrirRelatorio()"><span class="icon">🖨️</span> Imprimir relatório</button>
+        </div>
+
+        <div class="lancamento-card" id="lancamentoCard">
+            <div class="lancamento-grid">
+                <div class="input-group">
+                    <label>Professor</label>
+                    <select id="selectProfessor"></select>
+                </div>
+                <div class="input-group">
+                    <label>Qtd. cópias</label>
+                    <input type="number" id="inputCopias" min="1" value="1" step="1" placeholder="Ex: 10">
+                </div>
+                <div class="input-group">
+                    <label>Cota <span class="opcional">(opcional)</span></label>
+                    <input type="number" id="inputCota" min="0" value="" step="1" placeholder="Ex: 5">
+                </div>
+                <div class="input-group">
+                    <label>Data</label>
+                    <input type="date" id="inputData" required>
+                </div>
+                <div class="input-group btn-lancar-wrap">
+                    <label>&nbsp;</label>
+                    <button class="btn-registrar" id="btnRegistrar" onclick="lancarCopias()">➕ Registrar</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="rankings-grid">
+            <div class="ranking-card" onclick="abrirModalRanking('geral')">
+                <h3>🏆 Ranking do Mês <span class="hint">clique p/ detalhes</span></h3>
+                <ul id="rankingMes" class="ranking-list"><li class="empty-message">Nenhum lançamento neste mês</li></ul>
+            </div>
+            <div class="ranking-card" onclick="abrirModalRanking('top3')">
+                <h3>⭐ Top 3 do Mês <span class="hint">clique p/ detalhes</span></h3>
+                <ul id="rankingTop3" class="ranking-list"><li class="empty-message">Nenhum lançamento neste mês</li></ul>
+            </div>
+            <div class="ranking-card cota" onclick="abrirModalRanking('cota')">
+                <h3>🏷️ Ranking de Cota <span class="hint">clique p/ detalhes</span></h3>
+                <ul id="rankingCota" class="ranking-list"><li class="empty-message">Nenhuma cota neste mês</li></ul>
+            </div>
+            <div class="ranking-card" onclick="abrirModalRanking('comparativo')">
+                <h3>📊 Comparativo <span class="hint">clique p/ detalhes</span></h3>
+                <ul id="comparativoAnterior" class="ranking-list"><li class="empty-message">Sem dados para comparar</li></ul>
+            </div>
+            <div class="ranking-card" onclick="abrirModalRanking('ano')">
+                <h3>📈 Acumulado do ano <span class="hint">clique p/ detalhes</span></h3>
+                <ul id="rankingAno" class="ranking-list"><li class="empty-message">Nenhum lançamento no ano</li></ul>
+            </div>
+        </div>
+
+        <div class="historico-card">
+            <h3>
+                <span>📋 Histórico do mês selecionado</span>
+                <button class="outline small" onclick="limparMesSelecionado()">🗑️ Limpar mês</button>
+            </h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 140px;">Data</th>
+                        <th>Professor</th>
+                        <th style="width: 110px;">Cópias</th>
+                        <th style="width: 110px;">Cota</th>
+                        <th style="width: 90px; text-align:right;">Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="tabelaHistoricoMes">
+                    <tr><td colspan="5" class="msg-vazio">Nenhum lançamento neste mês</td></tr>
+                </tbody>
+            </table>
+            <div id="paginacaoHistorico" class="paginacao" style="display:none;">
+                <div class="info-pag" id="infoPag"></div>
+                <div class="botoes-pag" id="botoesPag"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="pagePessoas" class="page">
+        <div class="pessoas-header"><h2>👩‍🏫 Professores Cadastrados</h2></div>
+        <div class="cadastro-form">
+            <div class="input-group">
+                <label>Nome do professor</label>
+                <input type="text" id="inputNomeProfessor" placeholder="Ex: Maria Silva">
+            </div>
+            <button onclick="cadastrarProfessor()">Cadastrar</button>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Total no mês selecionado</th>
+                    <th>Cota no mês</th>
+                    <th>Total geral (todos os meses)</th>
+                    <th style="width: 100px; text-align:right;">Ações</th>
+                </tr>
+            </thead>
+            <tbody id="tabelaProfessores">
+                <tr><td colspan="5" class="msg-vazio">Nenhum professor cadastrado</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <footer>
+        <span class="institution">EMEF José Sabbag • Secretaria de Educação</span>
+        <p>© <span id="anoCopyright"></span> Controle de Reprografia • Desenvolvido por <span class="dev">Joao_Lino</span></p>
+        <p>Todos os direitos reservados • Dados sincronizados com Supabase</p>
+    </footer>
+</div>
+
+<div id="modalOverlay" class="modal-overlay" onclick="if(event.target===this) fecharModal()">
+    <div class="modal">
+        <div class="modal-header">
+            <h3 id="modalTitulo">Detalhes</h3>
+            <button class="modal-close" onclick="fecharModal()">×</button>
+        </div>
+        <div class="modal-body" id="modalBody"></div>
+        <div class="modal-footer" id="modalFooter"></div>
+    </div>
+</div>
+
+<div id="toastFlutuante" class="toast-flutuante">
+    <span class="toast-icone">✅</span>
+    <span id="toastTexto">Cópias registradas!</span>
+</div>
+
+<div id="relatorioOverlay" class="relatorio-overlay">
+    <div class="relatorio-container">
+        <div class="relatorio-toolbar">
+            <h3>📄 Pré-visualização do Relatório</h3>
+            <div class="toolbar-btns">
+                <button class="sec" onclick="fecharRelatorio()">✕ Fechar</button>
+                <button onclick="window.print()">🖨️ Imprimir / Salvar PDF</button>
+            </div>
+        </div>
+        <div class="relatorio-scroll">
+            <div id="relatorioDocumento" class="documento"></div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+    // ============================================
+    // SUPABASE - Variável renomeada para evitar conflito
+    // ============================================
+    const SUPABASE_URL = 'https://ojvhnomviovwnkjhfbvb.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_gtGOHqoI05nWI8SToBjR9g_8c17nXnq';
+    
+    // ⚠️ AQUI: mudamos de "supabase" para "supabaseClient"
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
+    console.log('✅ Supabase conectado:', SUPABASE_URL);
+
+    let professores = [];
+    let lancamentos = [];
+    let mesAtual = '';
+    const ITENS_POR_PAGINA = 8;
+    const ITENS_POR_PAGINA_MODAL = 6;
+    let paginaHistorico = 1;
+
+    const estadoModais = {
+        ranking: { pagina: 1, tipo: null, dados: [] },
+        detalheProf: { pagina: 1, profId: null, dados: [] }
+    };
+
+    async function carregarDados() {
+        try {
+            // ⚠️ Trocado supabase por supabaseClient
+            const { data: profs, error: e1 } = await supabaseClient
+                .from('professores')
+                .select('id, nome')
+                .order('nome', { ascending: true });
+            if (e1) throw e1;
+
+            const { data: lancs, error: e2 } = await supabaseClient
+                .from('lancamentos_xerox')
+                .select('id, professor_id, data, quantidade, cota, observacao, created_at');
+            if (e2) throw e2;
+
+            professores = (profs || []).map(p => ({ id: String(p.id), nome: p.nome }));
+            lancamentos = (lancs || []).map(l => ({
+                id: String(l.id),
+                professorId: String(l.professor_id),
+                data: l.data,
+                quantidade: l.quantidade,
+                cota: l.cota || 0,
+                observacao: l.observacao || '',
+                created_at: l.created_at
+            }));
+            console.log(`✅ ${professores.length} professores / ${lancamentos.length} lançamentos`);
+        } catch (err) {
+            console.error('Erro ao carregar dados:', err);
+            alert('Erro ao conectar ao Supabase: ' + err.message);
+        }
+    }
+
+    function getHojeStr() {
+        const d = new Date();
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    }
+    function getMesAtualStr() { return getHojeStr().slice(0, 7); }
+    function getMesAnteriorStr(mesStr) {
+        const [ano, mes] = mesStr.split('-').map(Number);
+        const d = new Date(ano, mes - 2, 1);
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    }
+    function nomeMes(mesStr) {
+        const [ano, mes] = mesStr.split('-').map(Number);
+        const nomes = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+        return `${nomes[mes - 1]} de ${ano}`;
+    }
+    function dataEhDoMes(dataISO, mesStr) { return dataISO && dataISO.slice(0, 7) === mesStr; }
+    function dataEhDoAno(dataISO, ano) { return dataISO && dataISO.slice(0, 4) === String(ano); }
+    function formatarDataBR(dataISO) {
+        if (!dataISO) return '—';
+        const [a, m, d] = dataISO.split('-');
+        return `${d}/${m}/${a}`;
+    }
+    function formatarDataHoraBR(d) {
+        return d.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    }
+    function escapeHtml(s) {
+        const div = document.createElement('div');
+        div.textContent = s ?? '';
+        return div.innerHTML;
+    }
+    function gerarProtocolo(mesStr) {
+        const agora = new Date();
+        const ts = `${agora.getFullYear()}${String(agora.getMonth()+1).padStart(2,'0')}${String(agora.getDate()).padStart(2,'0')}${String(agora.getHours()).padStart(2,'0')}${String(agora.getMinutes()).padStart(2,'0')}${String(agora.getSeconds()).padStart(2,'0')}`;
+        return `EMEF-JS-${mesStr.replace('-','')}-${ts.slice(-8)}`;
+    }
+    function ordenarProfessoresAlfabetico(lista) {
+        return [...lista].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR', { sensitivity: 'base' }));
+    }
+
+    function popularSelectMes() {
+        const select = document.getElementById('selectMes');
+        const hoje = new Date();
+        const mesesSet = new Set();
+        for (let i = 0; i < 24; i++) {
+            const d = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1);
+            mesesSet.add(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
+        }
+        for (let i = 1; i <= 12; i++) {
+            const d = new Date(hoje.getFullYear(), hoje.getMonth() + i, 1);
+            mesesSet.add(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
+        }
+        lancamentos.forEach(l => { if (l.data) mesesSet.add(l.data.slice(0, 7)); });
+        const meses = Array.from(mesesSet).sort((a, b) => b.localeCompare(a));
+        select.innerHTML = meses.map(m => `<option value="${m}">${nomeMes(m)}</option>`).join('');
+        select.value = mesAtual;
+    }
+
+    function aoTrocarMes() {
+        mesAtual = document.getElementById('selectMes').value;
+        paginaHistorico = 1;
+        renderizarTudo();
+        document.querySelectorAll('.ranking-card').forEach((c, i) => {
+            c.style.animation = 'none';
+            void c.offsetWidth;
+            c.style.animation = `fadeInScale 0.5s ease ${0.05 * i}s both`;
+        });
+    }
+
+    function atualizarSelectProfessores() {
+        const select = document.getElementById('selectProfessor');
+        select.innerHTML = '';
+        if (professores.length === 0) {
+            const opt = document.createElement('option');
+            opt.textContent = 'Nenhum professor cadastrado';
+            opt.disabled = true;
+            select.appendChild(opt);
+            return;
+        }
+        const optVazio = document.createElement('option');
+        optVazio.value = '';
+        optVazio.textContent = '-- Selecione um professor --';
+        optVazio.disabled = true;
+        optVazio.selected = true;
+        select.appendChild(optVazio);
+        ordenarProfessoresAlfabetico(professores).forEach(p => {
+            const opt = document.createElement('option');
+            opt.value = p.id;
+            opt.textContent = p.nome;
+            select.appendChild(opt);
+        });
+    }
+
+    function totaisPorProfessorMes(mesStr) {
+        const mapa = new Map();
+        professores.forEach(p => mapa.set(p.id, { nome: p.nome, total: 0, id: p.id }));
+        lancamentos.forEach(l => {
+            if (l.professorId && dataEhDoMes(l.data, mesStr) && mapa.has(l.professorId)) {
+                mapa.get(l.professorId).total += l.quantidade;
+            }
+        });
+        return Array.from(mapa.values());
+    }
+    function totaisPorProfessorAno(ano) {
+        const mapa = new Map();
+        professores.forEach(p => mapa.set(p.id, { nome: p.nome, total: 0, id: p.id }));
+        lancamentos.forEach(l => {
+            if (l.professorId && dataEhDoAno(l.data, ano) && mapa.has(l.professorId)) {
+                mapa.get(l.professorId).total += l.quantidade;
+            }
+        });
+        return Array.from(mapa.values());
+    }
+    function totalDoMes(mesStr) {
+        return lancamentos.filter(l => dataEhDoMes(l.data, mesStr)).reduce((s, l) => s + l.quantidade, 0);
+    }
+    function cotasPorProfessorMes(mesStr) {
+        const mapa = new Map();
+        professores.forEach(p => mapa.set(p.id, { nome: p.nome, total: 0, id: p.id }));
+        lancamentos.forEach(l => {
+            if (l.professorId && dataEhDoMes(l.data, mesStr) && mapa.has(l.professorId)) {
+                mapa.get(l.professorId).total += (l.cota || 0);
+            }
+        });
+        return Array.from(mapa.values());
+    }
+    function totalCotaDoMes(mesStr) {
+        return lancamentos.filter(l => dataEhDoMes(l.data, mesStr)).reduce((s, l) => s + (l.cota || 0), 0);
+    }
+
+    function renderizarTudo() {
+        if (!mesAtual) mesAtual = getMesAtualStr();
+        popularSelectMes();
+        atualizarSelectProfessores();
+        renderizarResumoMes();
+        renderizarRankings();
+        renderizarHistoricoMes();
+        renderizarTabelaProfessores();
+    }
+
+    function renderizarResumoMes() {
+        const el = document.getElementById('totalMes');
+        el.textContent = totalDoMes(mesAtual);
+        el.style.animation = 'none';
+        void el.offsetWidth;
+        el.style.animation = 'countFade 0.5s ease';
+    }
+
+    function renderizarRankings() {
+        const totais = totaisPorProfessorMes(mesAtual);
+        const ranking = totais.filter(t => t.total > 0).sort((a, b) => b.total - a.total);
+
+        document.getElementById('rankingMes').innerHTML = ranking.length === 0
+            ? '<li class="empty-message">Nenhum lançamento neste mês</li>'
+            : ranking.map((item, i) => `<li><span class="name"><span class="position">${i+1}</span>${escapeHtml(item.nome)}</span><span class="badge">${item.total} cópias</span></li>`).join('');
+
+        const top3 = ranking.slice(0, 3);
+        document.getElementById('rankingTop3').innerHTML = top3.length === 0
+            ? '<li class="empty-message">Nenhum lançamento neste mês</li>'
+            : top3.map((item, i) => `<li><span class="name"><span class="position">${i+1}</span>${escapeHtml(item.nome)}</span><span class="badge">${item.total} cópias</span></li>`).join('');
+
+        const cotas = cotasPorProfessorMes(mesAtual).filter(t => t.total > 0).sort((a, b) => b.total - a.total);
+        document.getElementById('rankingCota').innerHTML = cotas.length === 0
+            ? '<li class="empty-message">Nenhuma cota neste mês</li>'
+            : cotas.map((item, i) => `<li><span class="name"><span class="position">${i+1}</span>${escapeHtml(item.nome)}</span><span class="badge">${item.total} cota</span></li>`).join('');
+
+        const mesAnterior = getMesAnteriorStr(mesAtual);
+        const totalAtual = totalDoMes(mesAtual);
+        const totalAnterior = totalDoMes(mesAnterior);
+        const elComp = document.getElementById('comparativoAnterior');
+        if (totalAtual === 0 && totalAnterior === 0) {
+            elComp.innerHTML = '<li class="empty-message">Sem dados para comparar</li>';
+        } else {
+            let diff = totalAnterior > 0 ? totalAtual - totalAnterior : 0;
+            let diffPct = totalAnterior > 0 ? ((diff / totalAnterior) * 100).toFixed(1) : 0;
+            const seta = diff > 0 ? '📈' : (diff < 0 ? '📉' : '➖');
+            const cor = diff > 0 ? '#22c55e' : (diff < 0 ? '#ef4444' : '#94a3b8');
+            const sinal = diff > 0 ? '+' : '';
+            elComp.innerHTML = `
+                <li><span class="name">${nomeMes(mesAnterior)}</span><span class="badge">${totalAnterior} cópias</span></li>
+                <li><span class="name">${nomeMes(mesAtual)}</span><span class="badge">${totalAtual} cópias</span></li>
+                <li style="margin-top:8px; padding-top:12px; border-top:1px solid #22303f;">
+                    <span class="name" style="color:${cor}; font-weight:600;">${seta} Variação</span>
+                    <span class="badge" style="background:${cor}22; color:${cor}; border-color:${cor}55;">
+                        ${totalAnterior === 0 ? '—' : `${sinal}${diff} (${sinal}${diffPct}%)`}
+                    </span>
+                </li>`;
+        }
+
+        const ano = parseInt(mesAtual.split('-')[0], 10);
+        const rankingAno = totaisPorProfessorAno(ano).filter(t => t.total > 0).sort((a, b) => b.total - a.total).slice(0, 5);
+        document.getElementById('rankingAno').innerHTML = rankingAno.length === 0
+            ? '<li class="empty-message">Nenhum lançamento no ano</li>'
+            : rankingAno.map((item, i) => `<li><span class="name"><span class="position">${i+1}</span>${escapeHtml(item.nome)}</span><span class="badge">${item.total} cópias</span></li>`).join('');
+    }
+
+    function renderizarHistoricoMes() {
+        const tbody = document.getElementById('tabelaHistoricoMes');
+        const pagDiv = document.getElementById('paginacaoHistorico');
+        const infoPag = document.getElementById('infoPag');
+        const botoesPag = document.getElementById('botoesPag');
+
+        const lista = lancamentos.filter(l => dataEhDoMes(l.data, mesAtual)).sort((a, b) => b.data.localeCompare(a.data));
+        if (lista.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="msg-vazio">Nenhum lançamento neste mês</td></tr>';
+            pagDiv.style.display = 'none';
+            return;
+        }
+
+        const totalPaginas = Math.ceil(lista.length / ITENS_POR_PAGINA);
+        if (paginaHistorico > totalPaginas) paginaHistorico = totalPaginas;
+        if (paginaHistorico < 1) paginaHistorico = 1;
+
+        const inicio = (paginaHistorico - 1) * ITENS_POR_PAGINA;
+        const fim = inicio + ITENS_POR_PAGINA;
+        const itensPagina = lista.slice(inicio, fim);
+        const mapaProf = Object.fromEntries(professores.map(p => [p.id, p.nome]));
+
+        tbody.innerHTML = itensPagina.map(l => {
+            const cota = l.cota || 0;
+            const cotaTxt = cota > 0 ? `<span class="cota-badge">🏷️ ${cota}</span>` : '<span style="color:#475569;">—</span>';
+            return `<tr>
+                <td>${formatarDataBR(l.data)}</td>
+                <td>${escapeHtml(mapaProf[l.professorId] || '(removido)')}</td>
+                <td><strong>${l.quantidade}</strong></td>
+                <td>${cotaTxt}</td>
+                <td><div class="acoes">
+                    <button class="icon-btn" title="Editar" onclick="abrirModalEditarLancamento('${l.id}')">✏️</button>
+                    <button class="icon-btn" title="Remover" onclick="removerLancamento('${l.id}')">🗑️</button>
+                </div></td>
+            </tr>`;
+        }).join('');
+
+        pagDiv.style.display = 'flex';
+        infoPag.textContent = `Mostrando ${inicio + 1}–${Math.min(fim, lista.length)} de ${lista.length} lançamentos`;
+
+        let botoesHtml = `<button class="pag-btn nav" ${paginaHistorico === 1 ? 'disabled' : ''} onclick="irParaPagina(${paginaHistorico - 1})">‹ Anterior</button>`;
+        const maxBotoes = 5;
+        let pagInicio = Math.max(1, paginaHistorico - Math.floor(maxBotoes / 2));
+        let pagFim = Math.min(totalPaginas, pagInicio + maxBotoes - 1);
+        if (pagFim - pagInicio + 1 < maxBotoes) pagInicio = Math.max(1, pagFim - maxBotoes + 1);
+        if (pagInicio > 1) {
+            botoesHtml += `<button class="pag-btn" onclick="irParaPagina(1)">1</button>`;
+            if (pagInicio > 2) botoesHtml += `<span style="color:#64748b; padding:0 4px;">…</span>`;
+        }
+        for (let i = pagInicio; i <= pagFim; i++) {
+            botoesHtml += `<button class="pag-btn ${i === paginaHistorico ? 'active' : ''}" onclick="irParaPagina(${i})">${i}</button>`;
+        }
+        if (pagFim < totalPaginas) {
+            if (pagFim < totalPaginas - 1) botoesHtml += `<span style="color:#64748b; padding:0 4px;">…</span>`;
+            botoesHtml += `<button class="pag-btn" onclick="irParaPagina(${totalPaginas})">${totalPaginas}</button>`;
+        }
+        botoesHtml += `<button class="pag-btn nav" ${paginaHistorico === totalPaginas ? 'disabled' : ''} onclick="irParaPagina(${paginaHistorico + 1})">Próxima ›</button>`;
+        botoesPag.innerHTML = botoesHtml;
+    }
+
+    function irParaPagina(p) { paginaHistorico = p; renderizarHistoricoMes(); }
+
+    function renderizarTabelaProfessores() {
+        const tbody = document.getElementById('tabelaProfessores');
+        if (professores.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="msg-vazio">Nenhum professor cadastrado</td></tr>';
+            return;
+        }
+        const totalMesMap = new Map(professores.map(p => [p.id, 0]));
+        const cotaMesMap = new Map(professores.map(p => [p.id, 0]));
+        const totalGeralMap = new Map(professores.map(p => [p.id, 0]));
+        lancamentos.forEach(l => {
+            if (totalGeralMap.has(l.professorId)) {
+                totalGeralMap.set(l.professorId, totalGeralMap.get(l.professorId) + l.quantidade);
+                if (dataEhDoMes(l.data, mesAtual)) {
+                    totalMesMap.set(l.professorId, totalMesMap.get(l.professorId) + l.quantidade);
+                    cotaMesMap.set(l.professorId, cotaMesMap.get(l.professorId) + (l.cota || 0));
+                }
+            }
+        });
+        const professoresOrdenados = ordenarProfessoresAlfabetico(professores);
+        tbody.innerHTML = professoresOrdenados.map(p => {
+            const cotaMes = cotaMesMap.get(p.id) || 0;
+            const cotaTxt = cotaMes > 0 ? `<span class="cota-badge" style="margin-left:0;">🏷️ ${cotaMes}</span>` : '<span style="color:#475569;">—</span>';
+            return `<tr>
+                <td><span class="professor-nome-link" onclick="abrirModalDetalhesProfessor('${p.id}')">${escapeHtml(p.nome)}</span></td>
+                <td class="total-copias">${totalMesMap.get(p.id) || 0}</td>
+                <td>${cotaTxt}</td>
+                <td class="total-copias" style="color:#94a3b8;">${totalGeralMap.get(p.id) || 0}</td>
+                <td><div class="acoes">
+                    <button class="icon-btn" title="Editar" onclick="abrirModalEditarProfessor('${p.id}')">✏️</button>
+                    <button class="icon-btn" title="Remover" onclick="removerProfessor('${p.id}')">🗑️</button>
+                </div></td>
+            </tr>`;
+        }).join('');
+    }
+
+    function abrirModal(titulo, htmlBody, htmlFooter) {
+        document.getElementById('modalTitulo').innerHTML = titulo;
+        document.getElementById('modalBody').innerHTML = htmlBody;
+        document.getElementById('modalFooter').innerHTML = htmlFooter || '';
+        document.getElementById('modalOverlay').classList.add('active');
+    }
+    function fecharModal() { document.getElementById('modalOverlay').classList.remove('active'); }
+
+    function montarPaginacaoModal(pagina, totalPaginas, funcaoNome) {
+        if (totalPaginas <= 1) return '';
+        let html = `<div class="paginacao"><div class="info-pag">Página ${pagina} de ${totalPaginas}</div><div class="botoes-pag">`;
+        html += `<button class="pag-btn nav" ${pagina === 1 ? 'disabled' : ''} onclick="${funcaoNome}(${pagina - 1})">‹ Anterior</button>`;
+        const maxBotoes = 5;
+        let pagInicio = Math.max(1, pagina - Math.floor(maxBotoes / 2));
+        let pagFim = Math.min(totalPaginas, pagInicio + maxBotoes - 1);
+        if (pagFim - pagInicio + 1 < maxBotoes) pagInicio = Math.max(1, pagFim - maxBotoes + 1);
+        if (pagInicio > 1) {
+            html += `<button class="pag-btn" onclick="${funcaoNome}(1)">1</button>`;
+            if (pagInicio > 2) html += `<span style="color:#64748b; padding:0 4px;">…</span>`;
+        }
+        for (let i = pagInicio; i <= pagFim; i++) {
+            html += `<button class="pag-btn ${i === pagina ? 'active' : ''}" onclick="${funcaoNome}(${i})">${i}</button>`;
+        }
+        if (pagFim < totalPaginas) {
+            if (pagFim < totalPaginas - 1) html += `<span style="color:#64748b; padding:0 4px;">…</span>`;
+            html += `<button class="pag-btn" onclick="${funcaoNome}(${totalPaginas})">${totalPaginas}</button>`;
+        }
+        html += `<button class="pag-btn nav" ${pagina === totalPaginas ? 'disabled' : ''} onclick="${funcaoNome}(${pagina + 1})">Próxima ›</button>`;
+        html += `</div></div>`;
+        return html;
+    }
+
+    function abrirModalDetalhesProfessor(id) {
+        estadoModais.detalheProf = { pagina: 1, profId: id };
+        renderizarModalDetalhesProfessor();
+    }
+    function irParaPaginaModalDetalheProf(p) {
+        estadoModais.detalheProf.pagina = p;
+        renderizarModalDetalhesProfessor(true);
+    }
+
+    function renderizarModalDetalhesProfessor(manterScroll) {
+        const { pagina, profId } = estadoModais.detalheProf;
+        const p = professores.find(x => x.id === profId);
+        if (!p) return;
+
+        const lancsProf = lancamentos.filter(l => l.professorId === profId).sort((a, b) => b.data.localeCompare(a.data));
+        const totalGeral = lancsProf.reduce((s, l) => s + l.quantidade, 0);
+        const totalMes = lancsProf.filter(l => dataEhDoMes(l.data, mesAtual)).reduce((s, l) => s + l.quantidade, 0);
+        const cotaGeral = lancsProf.reduce((s, l) => s + (l.cota || 0), 0);
+        const cotaMes = lancsProf.filter(l => dataEhDoMes(l.data, mesAtual)).reduce((s, l) => s + (l.cota || 0), 0);
+
+        const porMes = {};
+        lancsProf.forEach(l => { const m = l.data.slice(0, 7); if (!porMes[m]) porMes[m] = 0; porMes[m] += l.quantidade; });
+        const mesesOrdenados = Object.entries(porMes).sort((a, b) => b[0].localeCompare(a[0]));
+
+        const totalPaginas = Math.max(1, Math.ceil(lancsProf.length / ITENS_POR_PAGINA_MODAL));
+        let paginaAtual = Math.min(pagina, totalPaginas);
+        if (paginaAtual < 1) paginaAtual = 1;
+        estadoModais.detalheProf.pagina = paginaAtual;
+
+        const inicio = (paginaAtual - 1) * ITENS_POR_PAGINA_MODAL;
+        const fim = inicio + ITENS_POR_PAGINA_MODAL;
+        const lancsPagina = lancsProf.slice(inicio, fim);
+
+        let body = `
+            <div class="modal-total-destaque"><span class="label">Total de cópias (todos os meses)</span><span class="num">${totalGeral}</span></div>
+            <div class="modal-info-row"><span class="label">Total de cópias em ${nomeMes(mesAtual)}</span><span class="value highlight">${totalMes} cópias</span></div>`;
+        if (cotaGeral > 0) {
+            body += `<div class="modal-info-row"><span class="label">Total de cota (todos os meses)</span><span class="value" style="color:var(--accent);">🏷️ ${cotaGeral}</span></div>
+                     <div class="modal-info-row"><span class="label">Cota em ${nomeMes(mesAtual)}</span><span class="value" style="color:var(--accent);">🏷️ ${cotaMes}</span></div>`;
+        }
+        body += `
+            <div class="modal-info-row"><span class="label">Meses com lançamentos</span><span class="value">${mesesOrdenados.length}</span></div>
+            <div class="modal-info-row"><span class="label">Média de cópias por mês ativo</span><span class="value">${mesesOrdenados.length > 0 ? (totalGeral / mesesOrdenados.length).toFixed(1) : 0} cópias</span></div>
+            <h4 style="margin:18px 0 10px; color:#cbd5e1; font-size:0.92rem;">Resumo por mês</h4>`;
+        if (mesesOrdenados.length === 0) {
+            body += `<p class="empty-message">Nenhum lançamento registrado.</p>`;
+        } else {
+            body += `<div class="modal-lista-lancamentos"><table><thead><tr><th>Mês</th><th style="text-align:right;">Cópias</th></tr></thead><tbody>`;
+            mesesOrdenados.forEach(([m, total]) => { body += `<tr><td>${nomeMes(m)}</td><td style="text-align:right;"><strong>${total}</strong></td></tr>`; });
+            body += `</tbody></table></div>`;
+        }
+        body += `<h4 style="margin:18px 0 10px; color:#cbd5e1; font-size:0.92rem;">Todos os lançamentos</h4>`;
+        if (lancsProf.length === 0) {
+            body += `<p class="empty-message">Nenhum lançamento.</p>`;
+        } else {
+            body += `<div class="modal-lista-lancamentos"><table><thead><tr><th>Data</th><th style="text-align:right;">Cópias</th><th style="text-align:right;">Cota</th></tr></thead><tbody>`;
+            lancsPagina.forEach(l => {
+                const cotaTxt = (l.cota || 0) > 0 ? `<span style="color:var(--accent);">🏷️ ${l.cota}</span>` : '<span style="color:#475569;">—</span>';
+                body += `<tr><td>${formatarDataBR(l.data)}</td><td style="text-align:right;"><strong>${l.quantidade}</strong></td><td style="text-align:right;">${cotaTxt}</td></tr>`;
+            });
+            body += `</tbody></table></div>`;
+            body += montarPaginacaoModal(paginaAtual, totalPaginas, 'irParaPaginaModalDetalheProf');
+        }
+        const footer = `<button class="outline" onclick="fecharModal()">Fechar</button><button onclick="fecharModal(); abrirModalEditarProfessor('${profId}');">✏️ Editar</button>`;
+        abrirModal(`👤 ${escapeHtml(p.nome)}`, body, footer);
+        if (manterScroll) document.getElementById('modalBody').scrollTop = 0;
+    }
+
+    function abrirModalRanking(tipo) {
+        estadoModais.ranking = { pagina: 1, tipo: tipo };
+        renderizarModalRanking();
+    }
+    function irParaPaginaModalRanking(p) {
+        estadoModais.ranking.pagina = p;
+        renderizarModalRanking(true);
+    }
+
+    function renderizarModalRanking(manterScroll) {
+        const { pagina, tipo } = estadoModais.ranking;
+        const ano = parseInt(mesAtual.split('-')[0], 10);
+        const mesAnterior = getMesAnteriorStr(mesAtual);
+
+        if (tipo === 'geral' || tipo === 'top3') {
+            const totais = totaisPorProfessorMes(mesAtual).filter(t => t.total > 0).sort((a, b) => b.total - a.total);
+            const listaMostrar = tipo === 'top3' ? totais.slice(0, 3) : totais;
+            const titulo = tipo === 'top3' ? `⭐ Top 3 • ${nomeMes(mesAtual)}` : `🏆 Ranking Completo • ${nomeMes(mesAtual)}`;
+            let body = `<div class="modal-total-destaque"><span class="label">Total do mês</span><span class="num">${totalDoMes(mesAtual)}</span></div>`;
+            if (listaMostrar.length === 0) {
+                body += `<p class="empty-message">Nenhum lançamento neste mês.</p>`;
+            } else {
+                const totalPaginas = Math.max(1, Math.ceil(listaMostrar.length / ITENS_POR_PAGINA_MODAL));
+                let paginaAtual = Math.min(pagina, totalPaginas);
+                if (paginaAtual < 1) paginaAtual = 1;
+                estadoModais.ranking.pagina = paginaAtual;
+                const inicio = (paginaAtual - 1) * ITENS_POR_PAGINA_MODAL;
+                const fim = inicio + ITENS_POR_PAGINA_MODAL;
+                const itensPagina = listaMostrar.slice(inicio, fim);
+                body += `<p style="font-size:0.78rem; color:#64748b; margin-bottom:10px;">💡 Clique no nome para ver detalhes do professor</p>`;
+                body += `<div class="modal-lista-lancamentos"><table><thead><tr><th>#</th><th>Professor</th><th style="text-align:right;">Cópias</th><th style="text-align:right;">% do total</th></tr></thead><tbody>`;
+                const totalGeral = totalDoMes(mesAtual);
+                itensPagina.forEach((item, idx) => {
+                    const posGlobal = inicio + idx + 1;
+                    const pct = totalGeral > 0 ? ((item.total / totalGeral) * 100).toFixed(1) : '0';
+                    body += `<tr><td>${posGlobal}º</td><td><span class="nome-clickable" onclick="abrirModalDetalhesProfessor('${item.id}')">${escapeHtml(item.nome)}</span></td><td style="text-align:right;"><strong>${item.total}</strong></td><td style="text-align:right; color:#d4a04a;">${pct}%</td></tr>`;
+                });
+                body += `</tbody></table></div>`;
+                body += montarPaginacaoModal(paginaAtual, totalPaginas, 'irParaPaginaModalRanking');
+            }
+            abrirModal(titulo, body, `<button class="outline" onclick="fecharModal()">Fechar</button>`);
+            if (manterScroll) document.getElementById('modalBody').scrollTop = 0;
+            return;
+        }
+
+        if (tipo === 'cota') {
+            const cotas = cotasPorProfessorMes(mesAtual).filter(t => t.total > 0).sort((a, b) => b.total - a.total);
+            const totalCota = totalCotaDoMes(mesAtual);
+            let body = `<div class="modal-total-destaque"><span class="label">🏷️ Total de cota do mês</span><span class="num">${totalCota}</span></div>`;
+            body += `<p style="font-size:0.78rem; color:#64748b; margin-bottom:10px;">Ranking independente — as cotas <strong>não</strong> entram no ranking de consumo nem no relatório.</p>`;
+            if (cotas.length === 0) {
+                body += `<p class="empty-message">Nenhuma cota registrada neste mês.</p>`;
+            } else {
+                const totalPaginas = Math.max(1, Math.ceil(cotas.length / ITENS_POR_PAGINA_MODAL));
+                let paginaAtual = Math.min(pagina, totalPaginas);
+                if (paginaAtual < 1) paginaAtual = 1;
+                estadoModais.ranking.pagina = paginaAtual;
+                const inicio = (paginaAtual - 1) * ITENS_POR_PAGINA_MODAL;
+                const fim = inicio + ITENS_POR_PAGINA_MODAL;
+                const itensPagina = cotas.slice(inicio, fim);
+                body += `<div class="modal-lista-lancamentos"><table><thead><tr><th>#</th><th>Professor</th><th style="text-align:right;">Cota</th><th style="text-align:right;">% da cota</th></tr></thead><tbody>`;
+                itensPagina.forEach((item, idx) => {
+                    const posGlobal = inicio + idx + 1;
+                    const pct = totalCota > 0 ? ((item.total / totalCota) * 100).toFixed(1) : '0';
+                    body += `<tr><td>${posGlobal}º</td><td><span class="nome-clickable" onclick="abrirModalDetalhesProfessor('${item.id}')">${escapeHtml(item.nome)}</span></td><td style="text-align:right;"><strong style="color:var(--accent);">${item.total}</strong></td><td style="text-align:right; color:#d4a04a;">${pct}%</td></tr>`;
+                });
+                body += `</tbody></table></div>`;
+                body += montarPaginacaoModal(paginaAtual, totalPaginas, 'irParaPaginaModalRanking');
+            }
+            abrirModal(`🏷️ Ranking de Cota • ${nomeMes(mesAtual)}`, body, `<button class="outline" onclick="fecharModal()">Fechar</button>`);
+            if (manterScroll) document.getElementById('modalBody').scrollTop = 0;
+            return;
+        }
+
+        if (tipo === 'comparativo') {
+            const totalAtual = totalDoMes(mesAtual);
+            const totalAnterior = totalDoMes(mesAnterior);
+            const rankingAtual = totaisPorProfessorMes(mesAtual).filter(t => t.total > 0).sort((a, b) => b.total - a.total);
+            const rankingAnterior = totaisPorProfessorMes(mesAnterior).filter(t => t.total > 0).sort((a, b) => b.total - a.total);
+            let body = `<div class="modal-total-destaque"><span class="label">${nomeMes(mesAnterior)}</span><span class="num" style="color:#94a3b8;">${totalAnterior}</span></div>
+                        <div class="modal-total-destaque"><span class="label">${nomeMes(mesAtual)}</span><span class="num">${totalAtual}</span></div>`;
+            if (totalAnterior > 0) {
+                const diff = totalAtual - totalAnterior;
+                const pct = ((diff / totalAnterior) * 100).toFixed(1);
+                const cor = diff >= 0 ? '#22c55e' : '#ef4444';
+                body += `<div class="modal-info-row"><span class="label">Variação</span><span class="value" style="color:${cor};">${diff >= 0 ? '+' : ''}${diff} cópias (${diff >= 0 ? '+' : ''}${pct}%)</span></div>`;
+            }
+            body += `<h4 style="margin:18px 0 10px; color:#cbd5e1; font-size:0.92rem;">Detalhes por professor</h4>`;
+            const ids = new Set([...rankingAtual.map(r => r.nome), ...rankingAnterior.map(r => r.nome)]);
+            if (ids.size === 0) {
+                body += `<p class="empty-message">Nenhum dado nos dois meses.</p>`;
+            } else {
+                const todos = {};
+                rankingAtual.forEach(r => todos[r.nome] = { atual: r.total, anterior: 0, id: r.id });
+                rankingAnterior.forEach(r => { if (!todos[r.nome]) todos[r.nome] = { atual: 0, anterior: 0, id: r.id }; todos[r.nome].anterior = r.total; });
+                const comparativoArr = Object.entries(todos).sort((a, b) => (b[1].atual + b[1].anterior) - (a[1].atual + a[1].anterior));
+                const totalPaginas = Math.max(1, Math.ceil(comparativoArr.length / ITENS_POR_PAGINA_MODAL));
+                let paginaAtual = Math.min(pagina, totalPaginas);
+                if (paginaAtual < 1) paginaAtual = 1;
+                estadoModais.ranking.pagina = paginaAtual;
+                const inicio = (paginaAtual - 1) * ITENS_POR_PAGINA_MODAL;
+                const fim = inicio + ITENS_POR_PAGINA_MODAL;
+                const itensPagina = comparativoArr.slice(inicio, fim);
+                body += `<p style="font-size:0.78rem; color:#64748b; margin-bottom:10px;">💡 Clique no nome para ver detalhes do professor</p>`;
+                body += `<div class="modal-lista-lancamentos"><table><thead><tr><th>Professor</th><th style="text-align:right;">${nomeMes(mesAnterior).split(' ')[0]}</th><th style="text-align:right;">${nomeMes(mesAtual).split(' ')[0]}</th><th style="text-align:right;">Δ</th></tr></thead><tbody>`;
+                itensPagina.forEach(([nome, v]) => {
+                    const d = v.atual - v.anterior;
+                    const cor = d > 0 ? '#22c55e' : (d < 0 ? '#ef4444' : '#94a3b8');
+                    body += `<tr><td><span class="nome-clickable" onclick="abrirModalDetalhesProfessor('${v.id}')">${escapeHtml(nome)}</span></td><td style="text-align:right;">${v.anterior}</td><td style="text-align:right;"><strong>${v.atual}</strong></td><td style="text-align:right; color:${cor};">${d > 0 ? '+' : ''}${d}</td></tr>`;
+                });
+                body += `</tbody></table></div>`;
+                body += montarPaginacaoModal(paginaAtual, totalPaginas, 'irParaPaginaModalRanking');
+            }
+            abrirModal(`📊 Comparativo • ${nomeMes(mesAnterior)} → ${nomeMes(mesAtual)}`, body, `<button class="outline" onclick="fecharModal()">Fechar</button>`);
+            if (manterScroll) document.getElementById('modalBody').scrollTop = 0;
+            return;
+        }
+
+        if (tipo === 'ano') {
+            const totais = totaisPorProfessorAno(ano).filter(t => t.total > 0).sort((a, b) => b.total - a.total);
+            const totalAno = lancamentos.filter(l => dataEhDoAno(l.data, ano)).reduce((s, l) => s + l.quantidade, 0);
+            let body = `<div class="modal-total-destaque"><span class="label">Total em ${ano}</span><span class="num">${totalAno}</span></div>`;
+            if (totais.length === 0) {
+                body += `<p class="empty-message">Nenhum lançamento no ano.</p>`;
+            } else {
+                const totalPaginas = Math.max(1, Math.ceil(totais.length / ITENS_POR_PAGINA_MODAL));
+                let paginaAtual = Math.min(pagina, totalPaginas);
+                if (paginaAtual < 1) paginaAtual = 1;
+                estadoModais.ranking.pagina = paginaAtual;
+                const inicio = (paginaAtual - 1) * ITENS_POR_PAGINA_MODAL;
+                const fim = inicio + ITENS_POR_PAGINA_MODAL;
+                const itensPagina = totais.slice(inicio, fim);
+                body += `<p style="font-size:0.78rem; color:#64748b; margin-bottom:10px;">💡 Clique no nome para ver detalhes do professor</p>`;
+                body += `<div class="modal-lista-lancamentos"><table><thead><tr><th>#</th><th>Professor</th><th style="text-align:right;">Cópias no ano</th></tr></thead><tbody>`;
+                itensPagina.forEach((item, idx) => {
+                    const posGlobal = inicio + idx + 1;
+                    body += `<tr><td>${posGlobal}º</td><td><span class="nome-clickable" onclick="abrirModalDetalhesProfessor('${item.id}')">${escapeHtml(item.nome)}</span></td><td style="text-align:right;"><strong>${item.total}</strong></td></tr>`;
+                });
+                body += `</tbody></table></div>`;
+                body += montarPaginacaoModal(paginaAtual, totalPaginas, 'irParaPaginaModalRanking');
+            }
+            abrirModal(`📈 Acumulado ${ano}`, body, `<button class="outline" onclick="fecharModal()">Fechar</button>`);
+            if (manterScroll) document.getElementById('modalBody').scrollTop = 0;
+        }
+    }
+
+    function abrirModalEditarLancamento(id) {
+        const l = lancamentos.find(x => x.id === id);
+        if (!l) return;
+        const opcoesProf = ordenarProfessoresAlfabetico(professores).map(p => `<option value="${p.id}" ${p.id === l.professorId ? 'selected' : ''}>${escapeHtml(p.nome)}</option>`).join('');
+        const body = `
+            <div class="form-field"><label>Professor</label><select id="editLancProf">${opcoesProf}</select></div>
+            <div class="form-field"><label>Quantidade de cópias</label><input type="number" id="editLancQtd" min="1" value="${l.quantidade}"></div>
+            <div class="form-field"><label>Cota <span class="opcional">(opcional)</span></label><input type="number" id="editLancCota" min="0" value="${l.cota || ''}" placeholder="Ex: 5"></div>
+            <div class="form-field"><label>Data</label><input type="date" id="editLancData" value="${l.data}"></div>`;
+        const footer = `<button class="outline" onclick="fecharModal()">Cancelar</button><button onclick="salvarEdicaoLancamento('${id}')">Salvar alterações</button>`;
+        abrirModal('✏️ Editar lançamento', body, footer);
+    }
+
+    async function salvarEdicaoLancamento(id) {
+        const profId = document.getElementById('editLancProf').value;
+        const qtd = parseInt(document.getElementById('editLancQtd').value, 10);
+        const cotaRaw = document.getElementById('editLancCota').value.trim();
+        const cota = cotaRaw === '' ? 0 : parseInt(cotaRaw, 10);
+        const data = document.getElementById('editLancData').value;
+        if (!profId) return alert('Selecione um professor.');
+        if (isNaN(qtd) || qtd <= 0) return alert('Quantidade inválida.');
+        if (cotaRaw !== '' && (isNaN(cota) || cota < 0)) return alert('Cota inválida.');
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(data)) return alert('Data inválida.');
+        
+        // ⚠️ Trocado supabase por supabaseClient
+        const { error } = await supabaseClient.from('lancamentos_xerox').update({ professor_id: Number(profId), quantidade: qtd, cota: cota, data: data }).eq('id', Number(id));
+        
+        if (error) { console.error(error); return alert('Erro ao salvar: ' + error.message); }
+        const l = lancamentos.find(x => x.id === id);
+        if (l) { l.professorId = String(profId); l.quantidade = qtd; l.cota = cota; l.data = data; }
+        fecharModal();
+        if (data.slice(0, 7) !== mesAtual) mesAtual = data.slice(0, 7);
+        renderizarTudo();
+    }
+
+    function abrirModalEditarProfessor(id) {
+        const p = professores.find(x => x.id === id);
+        if (!p) return;
+        const totalMes = lancamentos.filter(l => l.professorId === id && dataEhDoMes(l.data, mesAtual)).reduce((s, l) => s + l.quantidade, 0);
+        const totalGeral = lancamentos.filter(l => l.professorId === id).reduce((s, l) => s + l.quantidade, 0);
+        const cotaMes = lancamentos.filter(l => l.professorId === id && dataEhDoMes(l.data, mesAtual)).reduce((s, l) => s + (l.cota || 0), 0);
+        const body = `
+            <div class="form-field"><label>Nome do professor</label><input type="text" id="editProfNome" value="${escapeHtml(p.nome)}"></div>
+            <div class="modal-info-row"><span class="label">Total no mês</span><span class="value">${totalMes} cópias</span></div>
+            <div class="modal-info-row"><span class="label">Cota no mês</span><span class="value" style="color:var(--accent);">🏷️ ${cotaMes}</span></div>
+            <div class="modal-info-row"><span class="label">Total geral (todos os meses)</span><span class="value">${totalGeral} cópias</span></div>`;
+        const footer = `<button class="outline" onclick="fecharModal()">Cancelar</button><button onclick="salvarEdicaoProfessor('${id}')">Salvar</button>`;
+        abrirModal('✏️ Editar professor', body, footer);
+    }
+
+    async function salvarEdicaoProfessor(id) {
+        const nome = document.getElementById('editProfNome').value.trim();
+        if (!nome) return alert('Nome inválido.');
+        
+        // ⚠️ Trocado supabase por supabaseClient
+        const { error } = await supabaseClient.from('professores').update({ nome }).eq('id', Number(id));
+        
+        if (error) { console.error(error); return alert('Erro ao salvar: ' + error.message); }
+        const p = professores.find(x => x.id === id);
+        if (p) p.nome = nome;
+        fecharModal();
+        renderizarTudo();
+    }
+
+    async function lancarCopias() {
+        const professorId = document.getElementById('selectProfessor').value;
+        const quantidade = parseInt(document.getElementById('inputCopias').value, 10);
+        const cotaRaw = document.getElementById('inputCota').value.trim();
+        const cota = cotaRaw === '' ? 0 : parseInt(cotaRaw, 10);
+        const data = document.getElementById('inputData').value;
+        if (!professorId) return alert('Selecione um professor.');
+        if (isNaN(quantidade) || quantidade <= 0) return alert('Quantidade inválida.');
+        if (cotaRaw !== '' && (isNaN(cota) || cota < 0)) return alert('Cota inválida.');
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(data)) return alert('Data inválida.');
+        const btn = document.getElementById('btnRegistrar');
+        if (btn) { btn.classList.add('pulsando'); btn.disabled = true; }
+        
+        // ⚠️ Trocado supabase por supabaseClient
+        const { data: nova, error } = await supabaseClient.from('lancamentos_xerox').insert({ professor_id: Number(professorId), quantidade: quantidade, cota: cota, data: data }).select().single();
+        
+        if (btn) { btn.classList.remove('pulsando'); btn.disabled = false; }
+        if (error) { console.error(error); return alert('Erro ao registrar: ' + error.message); }
+        lancamentos.push({ id: String(nova.id), professorId: String(nova.professor_id), data: nova.data, quantidade: nova.quantidade, cota: nova.cota || 0, observacao: nova.observacao || '', created_at: nova.created_at });
+        const card = document.getElementById('lancamentoCard');
+        if (card) { card.classList.add('flash-sucesso'); setTimeout(() => card.classList.remove('flash-sucesso'), 800); }
+        if (btn) { btn.classList.add('sucesso'); setTimeout(() => btn.classList.remove('sucesso'), 600); }
+        const toast = document.getElementById('toastFlutuante');
+        const toastTexto = document.getElementById('toastTexto');
+        if (toast && toastTexto) {
+            toastTexto.textContent = `+${quantidade} cópias registradas!`;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2500);
+        }
+        document.getElementById('inputCopias').value = 1;
+        document.getElementById('inputCota').value = '';
+        if (data.slice(0, 7) !== mesAtual) mesAtual = data.slice(0, 7);
+        renderizarTudo();
+    }
+
+    async function cadastrarProfessor() {
+        const input = document.getElementById('inputNomeProfessor');
+        const nome = input.value.trim();
+        if (!nome) return alert('Informe o nome do professor.');
+        
+        // ⚠️ Trocado supabase por supabaseClient
+        const { data, error } = await supabaseClient.from('professores').insert({ nome }).select().single();
+        
+        if (error) { console.error(error); return alert('Erro ao cadastrar: ' + error.message); }
+        professores.push({ id: String(data.id), nome: data.nome });
+        input.value = '';
+        renderizarTudo();
+    }
+
+    async function removerLancamento(id) {
+        if (!confirm('Remover este lançamento?')) return;
+        
+        // ⚠️ Trocado supabase por supabaseClient
+        const { error } = await supabaseClient.from('lancamentos_xerox').delete().eq('id', Number(id));
+        
+        if (error) { console.error(error); return alert('Erro ao remover: ' + error.message); }
+        lancamentos = lancamentos.filter(x => x.id !== id);
+        renderizarTudo();
+    }
+
+    async function removerProfessor(id) {
+        if (!confirm('Remover este professor e TODOS os lançamentos dele?')) return;
+        
+        // ⚠️ Trocado supabase por supabaseClient
+        const { error } = await supabaseClient.from('professores').delete().eq('id', Number(id));
+        
+        if (error) { console.error(error); return alert('Erro ao remover: ' + error.message); }
+        professores = professores.filter(p => p.id !== id);
+        lancamentos = lancamentos.filter(l => l.professorId !== id);
+        renderizarTudo();
+    }
+
+    async function limparMesSelecionado() {
+        if (!confirm(`Apagar TODOS os lançamentos de ${nomeMes(mesAtual)}?`)) return;
+        const [ano, mes] = mesAtual.split('-').map(Number);
+        const inicio = `${ano}-${String(mes).padStart(2, '0')}-01`;
+        const proxMes = mes === 12 ? `${ano + 1}-01-01` : `${ano}-${String(mes + 1).padStart(2, '0')}-01`;
+        
+        // ⚠️ Trocado supabase por supabaseClient
+        const { error } = await supabaseClient.from('lancamentos_xerox').delete().gte('data', inicio).lt('data', proxMes);
+        
+        if (error) { console.error(error); return alert('Erro ao limpar: ' + error.message); }
+        lancamentos = lancamentos.filter(l => !dataEhDoMes(l.data, mesAtual));
+        renderizarTudo();
+    }
+
+    function switchPage(p) {
+        document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.nav-tabs button').forEach(el => el.classList.remove('active'));
+        document.getElementById(`page${p.charAt(0).toUpperCase() + p.slice(1)}`).classList.add('active');
+        document.getElementById(`tab${p.charAt(0).toUpperCase() + p.slice(1)}`).classList.add('active');
+    }
+
+    function abrirRelatorio() {
+        document.getElementById('relatorioOverlay').classList.add('active');
+        gerarDocumentoRelatorio();
+    }
+    function fecharRelatorio() { document.getElementById('relatorioOverlay').classList.remove('active'); }
+
+    function gerarDocumentoRelatorio() {
+        const ano = parseInt(mesAtual.split('-')[0], 10);
+        const totalMes = totalDoMes(mesAtual);
+        const totalCota = totalCotaDoMes(mesAtual);
+        const totais = totaisPorProfessorMes(mesAtual).filter(t => t.total > 0).sort((a, b) => b.total - a.total);
+        const cotas = cotasPorProfessorMes(mesAtual).filter(t => t.total > 0).sort((a, b) => b.total - a.total);
+        const protocolo = gerarProtocolo(mesAtual);
+        const agora = new Date();
+        const dataEmissao = formatarDataHoraBR(agora);
+
+        let html = `
+        <div class="doc-header">
+            <div class="logo-area">
+                <div class="logo-icon">🏫</div>
+                <div class="titulos">
+                    <h1>EMEF José Sabbag</h1>
+                    <div class="escola">Prefeitura Municipal • Secretaria de Educação</div>
+                    <p>Sistema de Gestão Escolar</p>
+                </div>
+            </div>
+            <div class="doc-meta">
+                <div>Protocolo: <span class="doc-id">${protocolo}</span></div>
+                <div>Emissão: ${dataEmissao}</div>
+                <div>Período: ${nomeMes(mesAtual)}</div>
+            </div>
+        </div>
+        <div class="doc-title-block">
+            <h2>📄 Relatório de Controle de Reprografia</h2>
+            <div class="periodo">Mês de referência: ${nomeMes(mesAtual)}</div>
+        </div>
+        <div class="doc-section">
+            <h3>Resumo geral</h3>
+            <div class="doc-cards">
+                <div class="doc-card"><div class="num">${totalMes}</div><div class="lbl">Total de cópias</div></div>
+                <div class="doc-card"><div class="num">${totais.length}</div><div class="lbl">Professores ativos</div></div>
+                <div class="doc-card"><div class="num">${totalCota}</div><div class="lbl">Total de cota</div></div>
+                <div class="doc-card"><div class="num">${lancamentos.filter(l => dataEhDoMes(l.data, mesAtual)).length}</div><div class="lbl">Lançamentos</div></div>
+            </div>
+        </div>
+        <div class="doc-section">
+            <h3>Ranking de cópias por professor</h3>
+            ${totais.length === 0 ? '<div class="doc-empty">Nenhum lançamento neste mês.</div>' : `
+            <table class="doc-table">
+                <thead><tr><th class="center">#</th><th>Professor</th><th class="right">Cópias</th><th class="right">% do total</th></tr></thead>
+                <tbody>
+                    ${totais.map((t, i) => {
+                        const pct = totalMes > 0 ? ((t.total / totalMes) * 100).toFixed(1) : '0';
+                        const classe = i === 0 ? 'ouro' : i === 1 ? 'prata' : i === 2 ? 'bronze' : '';
+                        return `<tr>
+                            <td class="center"><span class="rank-pos ${classe}">${i + 1}</span></td>
+                            <td>${escapeHtml(t.nome)}</td>
+                            <td class="right"><strong>${t.total}</strong></td>
+                            <td class="right">${pct}%</td>
+                        </tr>`;
+                    }).join('')}
+                    <tr class="doc-total-row"><td colspan="2">Total</td><td class="right">${totalMes}</td><td class="right">100%</td></tr>
+                </tbody>
+            </table>`}
+        </div>
+        <div class="doc-section">
+            <h3>Ranking de cota por professor</h3>
+            ${cotas.length === 0 ? '<div class="doc-empty">Nenhuma cota registrada neste mês.</div>' : `
+            <table class="doc-table">
+                <thead><tr><th class="center">#</th><th>Professor</th><th class="right">Cota</th><th class="right">% da cota</th></tr></thead>
+                <tbody>
+                    ${cotas.map((t, i) => {
+                        const pct = totalCota > 0 ? ((t.total / totalCota) * 100).toFixed(1) : '0';
+                        return `<tr>
+                            <td class="center"><span class="rank-pos">${i + 1}</span></td>
+                            <td>${escapeHtml(t.nome)}</td>
+                            <td class="right"><strong>${t.total}</strong></td>
+                            <td class="right">${pct}%</td>
+                        </tr>`;
+                    }).join('')}
+                    <tr class="doc-total-row"><td colspan="2">Total</td><td class="right">${totalCota}</td><td class="right">100%</td></tr>
+                </tbody>
+            </table>`}
+        </div>
+        <div class="doc-section">
+            <h3>Acumulado do ano ${ano}</h3>
+            ${(() => {
+                const totaisAno = totaisPorProfessorAno(ano).filter(t => t.total > 0).sort((a, b) => b.total - a.total);
+                const totalAno = lancamentos.filter(l => dataEhDoAno(l.data, ano)).reduce((s, l) => s + l.quantidade, 0);
+                if (totaisAno.length === 0) return '<div class="doc-empty">Nenhum lançamento no ano.</div>';
+                return `
+                <table class="doc-table">
+                    <thead><tr><th class="center">#</th><th>Professor</th><th class="right">Cópias no ano</th><th class="right">% do ano</th></tr></thead>
+                    <tbody>
+                        ${totaisAno.map((t, i) => {
+                            const pct = totalAno > 0 ? ((t.total / totalAno) * 100).toFixed(1) : '0';
+                            return `<tr>
+                                <td class="center"><span class="rank-pos">${i + 1}</span></td>
+                                <td>${escapeHtml(t.nome)}</td>
+                                <td class="right"><strong>${t.total}</strong></td>
+                                <td class="right">${pct}%</td>
+                            </tr>`;
+                        }).join('')}
+                        <tr class="doc-total-row"><td colspan="2">Total no ano</td><td class="right">${totalAno}</td><td class="right">100%</td></tr>
+                    </tbody>
+                </table>`;
+            })()}
+        </div>
+        <div class="doc-signature"><div class="linha"></div><div class="cargo">Direção / Coordenação</div></div>
+        <div class="doc-footer">
+            <div class="footer-info">
+                <strong>EMEF José Sabbag</strong><br>
+                Secretaria de Educação • Prefeitura Municipal<br>
+                Documento gerado eletronicamente em ${dataEmissao}
+            </div>
+            <div class="footer-dev">
+                <div class="dev-name">Joao_Lino</div>
+                Sistema de Gestão Escolar
+            </div>
+        </div>
+        <div class="doc-watermark">Protocolo: ${protocolo} • Página 1</div>
+        `;
+
+        document.getElementById('relatorioDocumento').innerHTML = html;
+    }
+
+    (async function init() {
+        mesAtual = getMesAtualStr();
+        await carregarDados();
+        renderizarTudo();
+        const inputData = document.getElementById('inputData');
+        if (inputData) inputData.value = getHojeStr();
+        const anoCopy = document.getElementById('anoCopyright');
+        if (anoCopy) anoCopy.textContent = new Date().getFullYear();
+    })();
+</script>
+</body>
+</html>
